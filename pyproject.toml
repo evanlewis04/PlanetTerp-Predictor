@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "planetterp-predictor"
+version = "0.2.0"
+description = "Professor rating prediction and evaluation tools built on PlanetTerp data."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=1.3.0",
+    "numpy>=1.21.0",
+    "planetterp>=1.0.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.11.0",
+    "scikit-learn>=1.0.0",
+    "nltk>=3.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+planetterp-predictor = "planetterp_predictor.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["planetterp_predictor*", "src*", "config*", "utils*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

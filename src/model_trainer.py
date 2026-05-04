@@ -82,7 +82,7 @@ class ModelTrainer:
         )
 
         print("\nModel Performance Comparison:")
-        print(results_table.sort_values('R²', ascending=False).to_string(index=False))
+        print(results_table.sort_values('R2', ascending=False).to_string(index=False))
 
         return best_model, best_importance
     
@@ -97,7 +97,7 @@ class ModelTrainer:
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
         
-        print(f"Linear Regression - MSE: {mse:.4f}, R²: {r2:.4f}")
+        print(f"Linear Regression - MSE: {mse:.4f}, R2: {r2:.4f}")
         
         # Feature importance
         importance = pd.DataFrame({
@@ -111,7 +111,7 @@ class ModelTrainer:
         # Create residual plot
         self.evaluator.create_residual_plot(y_pred, y_test, 'Linear Regression')
         
-        return model, {'Model': 'Linear Regression', 'MSE': mse, 'R²': r2}, importance
+        return model, {'Model': 'Linear Regression', 'MSE': mse, 'R2': r2}, importance
     
     def _train_random_forest(self, X_train, X_test, y_train, y_test):
         """Train Random Forest model"""
@@ -124,7 +124,7 @@ class ModelTrainer:
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
         
-        print(f"Random Forest - MSE: {mse:.4f}, R²: {r2:.4f}")
+        print(f"Random Forest - MSE: {mse:.4f}, R2: {r2:.4f}")
         
         # Feature importance
         importance = pd.DataFrame({
@@ -138,7 +138,7 @@ class ModelTrainer:
         # Create residual plot
         self.evaluator.create_residual_plot(y_pred, y_test, 'Random Forest')
         
-        return model, {'Model': 'Random Forest', 'MSE': mse, 'R²': r2}, importance
+        return model, {'Model': 'Random Forest', 'MSE': mse, 'R2': r2}, importance
     
     def _train_ridge_regression(self, X_train_scaled, X_test_scaled, y_train, y_test, feature_names):
         """Train Ridge Regression model with alpha tuning"""
@@ -165,7 +165,7 @@ class ModelTrainer:
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
         
-        print(f"Ridge Regression - MSE: {mse:.4f}, R²: {r2:.4f}")
+        print(f"Ridge Regression - MSE: {mse:.4f}, R2: {r2:.4f}")
         
         # Feature importance
         importance = pd.DataFrame({
@@ -182,7 +182,7 @@ class ModelTrainer:
         # Plot alpha tuning results
         self._plot_ridge_alpha_tuning(RIDGE_ALPHAS, ridge_r2_scores, best_alpha)
         
-        return model, {'Model': 'Ridge Regression', 'MSE': mse, 'R²': r2}, importance
+        return model, {'Model': 'Ridge Regression', 'MSE': mse, 'R2': r2}, importance
     
     def _plot_ridge_alpha_tuning(self, alphas, r2_scores, best_alpha):
         """Plot Ridge regression alpha tuning results"""
@@ -191,8 +191,8 @@ class ModelTrainer:
         plt.axvline(x=best_alpha, color='red', linestyle='--', label=f'Best alpha: {best_alpha}')
         plt.xscale('log')
         plt.xlabel('Alpha (Regularization Strength)')
-        plt.ylabel('R² Score')
-        plt.title('Ridge Regression: Alpha vs R² Score')
+        plt.ylabel('R2 Score')
+        plt.title('Ridge Regression: Alpha vs R2 Score')
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.savefig(os.path.join(OUTPUT_DIR, 'ridge_alpha_tuning.png'))
@@ -200,7 +200,7 @@ class ModelTrainer:
     
     def _find_best_model(self, results_table, models_dict, feature_importances, y_test):
         """Find and return the best performing model"""
-        best_row = results_table.loc[results_table['R²'].idxmax()]
+        best_row = results_table.loc[results_table['R2'].idxmax()]
         best_model_name = best_row['Model']
         best_model = models_dict[best_model_name]
         best_importance = feature_importances[best_model_name]

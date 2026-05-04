@@ -12,7 +12,7 @@ from utils.helpers import filter_valid_reviews, get_feature_summary
 from config.config import MAX_PROFESSORS, MIN_REVIEWS
 
 
-def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS, 
+def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
                            min_reviews: int = MIN_REVIEWS) -> tuple:
     """
     Complete workflow for PlanetTerp professor rating prediction
@@ -82,10 +82,11 @@ def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
     print("\n" + "="*70)
     print("ANALYSIS COMPLETE!")
     print("="*70)
-    print(f"✓ Processed {len(valid_professors)} professors")
-    print(f"✓ Extracted {len(X.columns)} features")
-    print(f"✓ Best R² score: {cv_results.iloc[0]['R² Mean']:.4f}")
-    print(f"✓ Generated plots saved to 'outputs/' directory")
+    best_cv_r2 = cv_results["R2 Mean"].max()
+    print(f"- Processed {len(valid_professors)} professors")
+    print(f"- Extracted {len(X.columns)} features")
+    print(f"- Best cross-validation R2 score: {best_cv_r2:.4f}")
+    print("- Generated plots saved to the configured output directory")
     
     if feature_importance is not None:
         print(f"\nTop 3 most predictive features:")

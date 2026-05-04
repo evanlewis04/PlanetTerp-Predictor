@@ -1,111 +1,140 @@
-# 🎓 PlanetTerp Professor Rating Predictor
+# PlanetTerp Professor Rating Predictor
 
-This is a machine learning project that predicts professor ratings using sentiment analysis, grade distributions, and course characteristics from PlanetTerp review data.
+This project predicts average professor ratings using PlanetTerp professor and review data. It combines review statistics, course features, expected grade features, and VADER sentiment analysis, then compares several regression models.
 
-## 📋 Features
+The project is being upgraded from a single college-project script into a more professional data science application. Phase 1 adds package metadata, structured settings, and repeatable CLI commands while preserving the original `python main.py` workflow.
 
-- **Data Fetching**: Automated retrieval of professor and review data from PlanetTerp API
-- **Feature Engineering**: 
-  - Sentiment analysis of student reviews using VADER
-  - Grade distribution analysis and statistics
-  - Course level and teaching breadth metrics
-  - Review quantity and quality indicators
-- **Machine Learning Models**:
+## Current Capabilities
+
+- Fetch professor and review data from the PlanetTerp API.
+- Filter professors by minimum review count.
+- Extract course, grade, review, and sentiment features.
+- Train and compare:
   - Linear Regression
-  - Ridge Regression with hyperparameter tuning
+  - Ridge Regression
   - Random Forest Regression
-- **Model Evaluation**: 10-fold cross-validation with comprehensive metrics
-- **Visualizations**: Automated generation of performance plots and feature importance charts
+- Evaluate models with cross-validation.
+- Generate PNG visualizations in `outputs/`.
 
-## 🚀 Quick Start
+## Setup
 
-### Prerequisites
+Use the existing virtual environment if it is already present:
 
-- Python 3.8+
-- pip package manager
-
-### Installation
-
-1. **Clone or download the project**
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. **Run the analysis**:
-   ```bash
-   python main.py
-   ```
-
-## 📁 Project Structure
-
-```
-planetterp_predictor/
-├── README.md                 # This file
-├── requirements.txt          # Python dependencies
-├── main.py                  # Main script to run analysis
-├── config/
-│   └── config.py            # Configuration settings
-├── src/
-│   ├── __init__.py
-│   ├── data_processor.py    # Data fetching from PlanetTerp API
-│   ├── feature_extractor.py # Feature engineering and extraction
-│   ├── model_trainer.py     # Model training and evaluation
-│   └── evaluator.py         # Cross-validation and plotting
-├── utils/
-│   ├── __init__.py
-│   └── helpers.py           # Utility functions
-└── outputs/                 # Generated plots and results
+```powershell
+.\.venv\Scripts\python.exe --version
 ```
 
-## ⚙️ Configuration
+Or create a fresh environment:
 
-Edit `config/config.py` to customize:
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-- **MAX_PROFESSORS**: Number of professors to fetch (default: 1000)
-- **MIN_REVIEWS**: Minimum reviews required per professor (default: 10)
-- **CV_FOLDS**: Cross-validation folds (default: 10)
-- **RIDGE_ALPHAS**: Alpha values for Ridge regression tuning
+For editable package development, use:
 
-## 📊 Output Files
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e .
+```
 
-The analysis generates several visualization files in the `outputs/` directory:
+For development tooling after Phase 1:
 
-- `cross_validation_results.png` - Cross-validation performance comparison
-- `model_comparison.png` - Final model performance metrics
-- `feature_importance_all_models.png` - Feature importance for each model
-- `*_residuals.png` - Residual plots for each model
-- `ridge_alpha_tuning.png` - Ridge regression hyperparameter tuning
-- `prediction_scatter.png` - Actual vs predicted ratings scatter plot
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+```
 
-## 🔬 Model Features
+## Running The Project
 
-The predictor uses the following feature categories:
+Original script entry point:
 
-### 📝 Review Statistics
-- Number of reviews
-- Average review length
-- Review presence indicator
+```powershell
+.\.venv\Scripts\python.exe main.py
+```
 
-### 📚 Course Features
-- Unique courses taught
-- Average course level (100, 200, 300, 400 level)
-- Ratio of upper-level courses
+New package CLI:
 
-### 📈 Grade Features
-- Average expected grade (GPA scale)
-- Grade variance
-- Ratio of A-level grades
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor run
+```
 
-### 🎭 Sentiment Features
-- Average positive sentiment
-- Average negative sentiment
-- Overall compound sentiment
-- Sentiment variance across reviews
+Quick smoke run with fewer professors and a lower review threshold:
 
-## 📈 Performance
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor run --max-professors 80 --min-reviews 1
+```
 
-Typical performance metrics:
-- **R² Score**: 0.77-0.87 
-- **Cross-validation**: 10-fold with standard deviation reporting
-- **Best Model**: Ridge Regression
+Fetch data and report retained sample size without training models:
 
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor data fetch --max-professors 20 --min-reviews 1
+```
+
+Print effective settings:
+
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor config
+```
+
+If installed in editable mode, the console script is also available:
+
+```powershell
+planetterp-predictor run --max-professors 80 --min-reviews 1
+```
+
+## Configuration
+
+Defaults live in `planetterp_predictor/settings.py` and compatibility constants are exported from `config/config.py` for the original modules.
+
+Settings can be overridden with environment variables. Copy `.env.example` as a reference for supported names:
+
+```text
+PLANETTERP_MAX_PROFESSORS=1000
+PLANETTERP_MIN_REVIEWS=10
+PLANETTERP_CV_FOLDS=10
+PLANETTERP_OUTPUT_DIR=outputs
+```
+
+The project does not load `.env` files automatically yet. Set variables in your shell before running commands when needed.
+
+## Output Files
+
+The analysis generates files in `outputs/`:
+
+- `cross_validation_results.png`
+- `model_comparison.png`
+- `feature_importance_all_models.png`
+- `linear_regression_residuals.png`
+- `ridge_regression_residuals.png`
+- `random_forest_residuals.png`
+- `ridge_alpha_tuning.png`
+- `prediction_scatter.png` if generated by a later workflow
+
+## Project Structure
+
+```text
+.
+├── planetterp_predictor/       # Phase 1 package entry points and settings
+├── config/                     # Legacy-compatible config constants
+├── src/                        # Data, feature, model, and evaluation modules
+├── utils/                      # Shared helper functions
+├── outputs/                    # Generated plots
+├── main.py                     # Original analysis entry point
+├── pyproject.toml              # Package and dev-tool configuration
+├── requirements.txt            # Runtime dependencies
+├── upgrade.md                  # Professional upgrade roadmap
+└── README.md
+```
+
+## Phase 1 Upgrade Notes
+
+Phase 1 introduced:
+
+- Installable package metadata in `pyproject.toml`.
+- `python -m planetterp_predictor` module execution.
+- `planetterp-predictor` console script support.
+- Structured settings with environment variable overrides.
+- `.env.example` documenting supported runtime settings.
+- Cleaner ASCII terminal output for Windows compatibility.
+
+Next phases should focus on data snapshotting, experiment tracking, stronger feature engineering, expanded model families, a backend API, and a frontend dashboard.

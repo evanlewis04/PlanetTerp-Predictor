@@ -53,8 +53,8 @@ class ModelEvaluator:
         # Store results from cross-validation
         results = {
             'Model': [],
-            'R² Mean': [],
-            'R² Std': [],
+            'R2 Mean': [],
+            'R2 Std': [],
             'MSE Mean': [],
             'MSE Std': []
         }
@@ -67,7 +67,7 @@ class ModelEvaluator:
             # For Ridge use scaled features; otherwise use original features
             X_to_use = X_scaled_df if name in ['Ridge Regression'] else X
 
-            # Calculate R² scores across CV folds
+            # Calculate R2 scores across CV folds
             r2_scores = cross_val_score(model, X_to_use, y, cv=kf, scoring=r2_scorer)
 
             # Calculate MSE scores (negative of MSE for cross_val_score)
@@ -76,8 +76,8 @@ class ModelEvaluator:
 
             # Store results for this model
             results['Model'].append(name)
-            results['R² Mean'].append(r2_scores.mean())
-            results['R² Std'].append(r2_scores.std())
+            results['R2 Mean'].append(r2_scores.mean())
+            results['R2 Std'].append(r2_scores.std())
             results['MSE Mean'].append(mse_scores.mean())
             results['MSE Std'].append(mse_scores.std())
 
@@ -98,12 +98,12 @@ class ModelEvaluator:
         """
         plt.figure(figsize=(12, 6))
 
-        # Plot R² results
+        # Plot R2 results
         plt.subplot(1, 2, 1)
-        plt.bar(results_df['Model'], results_df['R² Mean'])
-        plt.errorbar(results_df['Model'], results_df['R² Mean'],
-                     yerr=results_df['R² Std'], fmt='o', color='black')
-        plt.title('R² by Model (Cross-Validation)')
+        plt.bar(results_df['Model'], results_df['R2 Mean'])
+        plt.errorbar(results_df['Model'], results_df['R2 Mean'],
+                     yerr=results_df['R2 Std'], fmt='o', color='black')
+        plt.title('R2 by Model (Cross-Validation)')
         plt.ylim(0, 1)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
 
@@ -128,7 +128,7 @@ class ModelEvaluator:
         """
         models = results_table['Model']
         mse_scores = results_table['MSE']
-        r2_scores = results_table['R²']
+        r2_scores = results_table['R2']
 
         plt.figure(figsize=(12, 5))
 
@@ -144,7 +144,7 @@ class ModelEvaluator:
 
         plt.subplot(1, 2, 2)
         bars2 = plt.bar(models, r2_scores)
-        plt.title('R² by Model (higher is better)')
+        plt.title('R2 by Model (higher is better)')
         plt.ylim(0, 1)
         # Add values on top of bars
         for bar in bars2:

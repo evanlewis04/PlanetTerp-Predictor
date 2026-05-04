@@ -1,19 +1,19 @@
-"""
-Configuration settings for PlanetTerp analysis
-"""
+"""Compatibility constants for the original analysis modules."""
+
+from planetterp_predictor.settings import settings
 
 # Data fetching parameters
-MAX_PROFESSORS = 1000
-MIN_REVIEWS = 10
-PROFESSORS_PER_BATCH = 100
+MAX_PROFESSORS = settings.max_professors
+MIN_REVIEWS = settings.min_reviews
+PROFESSORS_PER_BATCH = settings.professors_per_batch
 
 # Model parameters
-RANDOM_STATE = 42
-TEST_SIZE = 0.2
-CV_FOLDS = 10
+RANDOM_STATE = settings.random_state
+TEST_SIZE = settings.test_size
+CV_FOLDS = settings.cv_folds
 
 # Ridge regression alpha values to test
-RIDGE_ALPHAS = [0.01, 0.1, 1.0, 10.0, 100.0]
+RIDGE_ALPHAS = list(settings.ridge_alphas)
 
 # Grade mapping for GPA calculation
 GRADE_MAP = {
@@ -25,10 +25,10 @@ GRADE_MAP = {
 }
 
 # Output settings
-OUTPUT_DIR = 'outputs'
-FIGURE_DPI = 300
-FIGURE_FORMAT = 'png'
+OUTPUT_DIR = settings.output_dir
+FIGURE_DPI = settings.figure_dpi
+FIGURE_FORMAT = settings.figure_format
 
 # Logging settings
-LOG_LEVEL = 'INFO'
-PROGRESS_INTERVAL = 100  # Log progress every N professors
+LOG_LEVEL = settings.log_level
+PROGRESS_INTERVAL = settings.progress_interval  # Log progress every N professors

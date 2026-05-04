@@ -46,6 +46,9 @@ data/processed/*.csv
 !data/.gitkeep
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+experiments/runs/*
+!experiments/.gitkeep
+!experiments/runs/.gitkeep
 *.log
 
 # Jupyter Notebooks

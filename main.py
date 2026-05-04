@@ -5,6 +5,7 @@ Main script to run PlanetTerp professor rating prediction analysis
 from sklearn.impute import SimpleImputer
 import pandas as pd
 from typing import Any
+from planetterp_predictor.experiment_tracking import ExperimentTracker
 from src.data_processor import PlanetTerpDataProcessor
 from src.feature_extractor import FeatureExtractor
 from src.model_trainer import ModelTrainer
@@ -15,7 +16,10 @@ from config.config import MAX_PROFESSORS, MIN_REVIEWS
 
 def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
                            min_reviews: int = MIN_REVIEWS,
-                           professors: list[dict[str, Any]] | None = None) -> tuple:
+                           professors: list[dict[str, Any]] | None = None,
+                           snapshot_metadata: dict[str, Any] | None = None,
+                           experiment_name: str | None = None,
+                           save_experiment: bool = True) -> tuple:
     """
     Complete workflow for PlanetTerp professor rating prediction
     
@@ -65,10 +69,12 @@ def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
     print(f"- Features: {', '.join(summary['feature_names'])}")
 
     # Step 4: Handle missing values
+    imputation_strategy = None
     if X.isnull().sum().sum() > 0:
         print(f"\nStep 4: Handling {X.isnull().sum().sum()} missing values")
         imputer = SimpleImputer(strategy='mean')
         X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+        imputation_strategy = "mean"
     else:
         print("\nStep 4: No missing values found")
 
@@ -82,7 +88,31 @@ def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
     # Step 6: Train and evaluate final models
     print("\nStep 6: Training and evaluating final models")
     trainer = ModelTrainer()
-    best_model, feature_importance = trainer.train_and_evaluate_models(X, y)
+    best_model, feature_importance, holdout_results, best_model_name = trainer.train_and_evaluate_models(X, y)
+
+    experiment_run_path = None
+    if save_experiment and best_model is not None:
+        target_summary = {
+            "count": len(y),
+            "min": float(y.min()),
+            "max": float(y.max()),
+            "mean": float(y.mean()),
+        }
+        run_id, run_dir = ExperimentTracker().save_run(
+            experiment_name=experiment_name,
+            snapshot_metadata=snapshot_metadata,
+            feature_columns=list(X.columns),
+            target_summary=target_summary,
+            imputation_strategy=imputation_strategy,
+            cv_results=cv_results,
+            holdout_results=holdout_results,
+            best_model_name=best_model_name,
+            best_model=best_model,
+            best_feature_importance=feature_importance,
+        )
+        experiment_run_path = run_dir
+        print(f"\nSaved experiment run: {run_id}")
+        print(f"Experiment artifacts: {run_dir}")
 
     # Final summary
     print("\n" + "="*70)
@@ -93,6 +123,8 @@ def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
     print(f"- Extracted {len(X.columns)} features")
     print(f"- Best cross-validation R2 score: {best_cv_r2:.4f}")
     print("- Generated plots saved to the configured output directory")
+    if experiment_run_path:
+        print(f"- Experiment artifacts saved to {experiment_run_path}")
     
     if feature_importance is not None:
         print(f"\nTop 3 most predictive features:")

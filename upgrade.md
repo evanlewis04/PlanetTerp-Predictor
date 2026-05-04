@@ -302,6 +302,18 @@ The final dashboard should display both the best R² model and the best interpre
 
 ## Phase 5: Experiment Tracking And Model Registry
 
+Status: partially implemented in the first Phase 5 upgrade commit.
+
+Completed so far:
+
+- Added lightweight local experiment tracking under `experiments/runs/`.
+- Added `metadata.json` for settings, Git commit, snapshot metadata, feature columns, target summary, and best model details.
+- Added saved cross-validation and holdout metrics CSV artifacts.
+- Added saved best-model feature importance CSV artifacts when native importances are available.
+- Added `best_model.joblib` bundles containing the fitted model, feature columns, feature pipeline version, and imputation strategy.
+- Added plot copying from `outputs/` into each experiment run folder.
+- Added `docs/experiments.md` with artifact and CLI usage documentation.
+
 ### 1. Track Every Training Run
 
 Each experiment should save:

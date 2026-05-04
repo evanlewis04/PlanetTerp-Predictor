@@ -72,6 +72,7 @@ def run_analysis(args: argparse.Namespace) -> int:
     from planetterp_predictor.data_artifacts import load_raw_snapshot
 
     professors = None
+    metadata = None
     snapshot_path = _resolve_snapshot_path(args.snapshot)
     if args.snapshot and snapshot_path is None:
         print("No raw data snapshot found. Run `data fetch` first.")
@@ -84,6 +85,9 @@ def run_analysis(args: argparse.Namespace) -> int:
         num_professors=args.max_professors,
         min_reviews=args.min_reviews,
         professors=professors,
+        snapshot_metadata=metadata,
+        experiment_name=args.experiment_name,
+        save_experiment=not args.no_save_experiment,
     )
     if model is None or X is None:
         return 1
@@ -218,6 +222,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--snapshot",
         default=None,
         help="Optional raw professors snapshot JSON file, or 'latest', to train from saved data.",
+    )
+    run_parser.add_argument(
+        "--experiment-name",
+        default=None,
+        help="Optional human-readable name to include in the saved experiment run id.",
+    )
+    run_parser.add_argument(
+        "--no-save-experiment",
+        action="store_true",
+        help="Run training without writing experiment artifacts.",
     )
     run_parser.set_defaults(func=run_analysis)
 

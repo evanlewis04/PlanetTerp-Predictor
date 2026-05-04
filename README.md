@@ -109,6 +109,14 @@ Train from a saved snapshot instead of the live API:
 .\.venv\Scripts\python.exe -m planetterp_predictor run --snapshot latest --min-reviews 1
 ```
 
+Save a named experiment run:
+
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor run --snapshot latest --min-reviews 1 --experiment-name phase5-smoke
+```
+
+Experiment tracking is documented in `docs/experiments.md`.
+
 Print effective settings:
 
 ```powershell
@@ -214,3 +222,14 @@ Phase 4 introduced:
 - Cross-validation metrics for R2, RMSE, MAE, and MSE.
 - Holdout metrics for R2, adjusted R2, RMSE, MAE, median absolute error, and MSE.
 - Native feature importance extraction for compatible models.
+
+## Phase 5 Upgrade Notes
+
+Phase 5 introduced:
+
+- Local experiment run folders in `experiments/runs/`.
+- Metadata capture for settings, Git commit, snapshot, feature columns, target summary, and best model.
+- Saved cross-validation and holdout metrics as CSV files.
+- Saved best-model feature importance when available.
+- Saved best model bundles with `joblib`.
+- Copied current output plots into each experiment run folder.

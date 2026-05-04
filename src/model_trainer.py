@@ -86,6 +86,9 @@ class ModelTrainer:
         best_model_name = results_table.iloc[0]["Model"]
         self.evaluator.create_residual_plot(predictions[best_model_name], y_test, best_model_name)
         self.evaluator.create_prediction_scatter_plot(y_test, predictions[best_model_name], best_model_name)
+        self.last_results_table = results_table
+        self.last_best_model_name = best_model_name
+        self.last_feature_importances = feature_importances
 
         print("\nModel Performance Comparison:")
         display_columns = [
@@ -100,7 +103,7 @@ class ModelTrainer:
         ]
         print(results_table[display_columns].to_string(index=False))
 
-        return best_model, best_importance
+        return best_model, best_importance, results_table, best_model_name
 
     def _fit_model(self, spec: ModelSpec, X_train: pd.DataFrame, y_train: pd.Series) -> tuple[Any, dict]:
         """Fit a model, using grid search when a tuning grid is configured."""

@@ -9,6 +9,7 @@ The project is being upgraded from a single college-project script into a more p
 - Fetch professor and review data from the PlanetTerp API.
 - Filter professors by minimum review count.
 - Extract course, grade, review, and sentiment features.
+- Extract richer Phase 3 features for course mix, review length/readability, expected-grade distribution, sentiment balance, and keyword categories.
 - Train and compare:
   - Linear Regression
   - Ridge Regression
@@ -90,6 +91,8 @@ Build a processed model-ready feature CSV from the latest snapshot:
 .\.venv\Scripts\python.exe -m planetterp_predictor data build-features --snapshot latest --min-reviews 1
 ```
 
+The expanded feature set is documented in `docs/feature_catalog.md`.
+
 Train from a saved snapshot instead of the live API:
 
 ```powershell
@@ -143,6 +146,7 @@ The analysis generates files in `outputs/`:
 ├── planetterp_predictor/       # Phase 1 package entry points and settings
 ├── config/                     # Legacy-compatible config constants
 ├── data/                       # Ignored raw and processed data artifacts
+├── docs/                       # Feature and methodology documentation
 ├── src/                        # Data, feature, model, and evaluation modules
 ├── utils/                      # Shared helper functions
 ├── outputs/                    # Generated plots
@@ -177,3 +181,14 @@ Phase 2 introduced:
 - Snapshot-aware training with `run --snapshot`.
 
 Generated raw and processed data artifacts are ignored by Git so local experiments do not clutter commits.
+
+## Phase 3 Upgrade Notes
+
+Phase 3 introduced:
+
+- Expanded review length and readability features.
+- Expanded course-level mix features.
+- Expanded expected-grade distribution features.
+- Sentiment balance ratios.
+- Interpretable keyword category features.
+- A documented feature catalog with leakage notes.

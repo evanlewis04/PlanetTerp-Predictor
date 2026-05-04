@@ -164,6 +164,14 @@ The frontend should display this summary.
 
 ## Phase 3: Feature Engineering
 
+Status: partially implemented in the first Phase 3 upgrade commit.
+
+Completed so far:
+
+- Added richer non-rating-derived review length, readability, course mix, expected-grade, sentiment balance, and keyword-category features.
+- Added `docs/feature_catalog.md` to document feature sources, transformations, and leakage risk.
+- Explicitly deferred rating-derived features because they would leak the target into the predictors.
+
 ### 1. Improve Existing Features
 
 Enhance the current feature set:

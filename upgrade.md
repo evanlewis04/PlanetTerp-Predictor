@@ -386,6 +386,16 @@ For early versions, training can remain a CLI task while the API only reads gene
 
 ## Phase 7: Frontend Dashboard
 
+Status: implemented in the first Phase 7 upgrade pass.
+
+Completed so far:
+
+- Added a React, TypeScript, and Vite dashboard under `app/`.
+- Added dashboard views for overview, dataset metadata, model comparison, feature importance, plot gallery, prediction, and saved runs.
+- Connected the frontend to the Phase 6 FastAPI endpoints for health, runs, metadata, metrics, plots, model registry, and predictions.
+- Added a simple prediction form that submits feature payloads to `/api/predict`.
+- Added frontend setup notes to `README.md` and `docs/api.md`.
+
 Build a full frontend app, preferably with React, TypeScript, and Vite.
 
 ### 1. Dashboard Views

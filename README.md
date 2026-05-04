@@ -25,6 +25,7 @@ The project is being upgraded from a single college-project script into a more p
 - Evaluate models with cross-validation.
 - Tune configured models with `GridSearchCV`.
 - Generate PNG visualizations in `outputs/`.
+- Explore saved runs, metrics, plots, model metadata, feature importance, and predictions in a React dashboard.
 
 ## Setup
 
@@ -125,6 +126,18 @@ Start the backend API:
 
 Backend API usage is documented in `docs/api.md`.
 
+Start the frontend dashboard in a second terminal:
+
+```powershell
+cd app
+npm install
+npm run dev
+```
+
+The dashboard runs at `http://127.0.0.1:5173` by default and reads the API from
+`http://127.0.0.1:8000`. Set `VITE_API_BASE_URL` before `npm run dev` to use a
+different backend URL.
+
 Print effective settings:
 
 ```powershell
@@ -182,6 +195,8 @@ The analysis generates files in `outputs/`:
 ├── upgrade.md                  # Professional upgrade roadmap
 └── README.md
 ```
+
+Note: the Phase 7 frontend lives in `app/`.
 
 ## Phase 1 Upgrade Notes
 
@@ -252,3 +267,12 @@ Phase 6 introduced:
 - Synchronous API-triggered training.
 - Static serving for copied experiment plots.
 - A `serve-api` CLI command.
+
+## Phase 7 Upgrade Notes
+
+Phase 7 introduced:
+
+- A React, TypeScript, and Vite frontend in `app/`.
+- Dashboard views for overview, dataset metadata, model comparison, feature importance, plots, prediction, and saved runs.
+- API integration for health, runs, run metadata, metrics, plots, model registry, and predictions.
+- Configurable `VITE_API_BASE_URL` support for alternate FastAPI hosts.

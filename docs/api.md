@@ -14,6 +14,23 @@ Interactive API docs are available at:
 http://127.0.0.1:8000/docs
 ```
 
+## Start The Frontend Dashboard
+
+```powershell
+cd app
+npm install
+npm run dev
+```
+
+The dashboard is available at:
+
+```text
+http://127.0.0.1:5173
+```
+
+By default the frontend reads from `http://127.0.0.1:8000`. Override that with
+`VITE_API_BASE_URL` when the backend is hosted elsewhere.
+
 ## Endpoints
 
 ```text

@@ -51,6 +51,11 @@ experiments/runs/*
 !experiments/runs/.gitkeep
 *.log
 
+# Frontend
+app/node_modules/
+app/dist/
+app/.vite/
+
 # Jupyter Notebooks
 .ipynb_checkpoints
 

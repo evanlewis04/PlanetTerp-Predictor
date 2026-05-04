@@ -210,6 +210,18 @@ Add a documented feature list with:
 
 ## Phase 4: Modeling Upgrade
 
+Status: partially implemented in the first Phase 4 upgrade commit.
+
+Completed so far:
+
+- Added a shared sklearn model registry in `src/model_specs.py`.
+- Added mean and median baselines.
+- Added Lasso, Elastic Net, Extra Trees, Gradient Boosting, Hist Gradient Boosting, KNN, and SVR model families.
+- Added `GridSearchCV` tuning for configured regularized, tree, boosting, KNN, and SVR models.
+- Added cross-validation RMSE and MAE alongside R2 and MSE.
+- Added holdout RMSE, MAE, median absolute error, and adjusted R2.
+- Added `docs/modeling.md` to document model families, metrics, tuning, and interpretation notes.
+
 ### 1. Establish Baselines
 
 Keep simple baselines so advanced models can be compared honestly:

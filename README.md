@@ -11,10 +11,19 @@ The project is being upgraded from a single college-project script into a more p
 - Extract course, grade, review, and sentiment features.
 - Extract richer Phase 3 features for course mix, review length/readability, expected-grade distribution, sentiment balance, and keyword categories.
 - Train and compare:
+  - Mean and median baselines
   - Linear Regression
   - Ridge Regression
+  - Lasso Regression
+  - Elastic Net
   - Random Forest Regression
+  - Extra Trees Regression
+  - Gradient Boosting Regression
+  - Hist Gradient Boosting Regression
+  - KNN Regression
+  - Support Vector Regression
 - Evaluate models with cross-validation.
+- Tune configured models with `GridSearchCV`.
 - Generate PNG visualizations in `outputs/`.
 
 ## Setup
@@ -92,6 +101,7 @@ Build a processed model-ready feature CSV from the latest snapshot:
 ```
 
 The expanded feature set is documented in `docs/feature_catalog.md`.
+Model families, metrics, and tuning behavior are documented in `docs/modeling.md`.
 
 Train from a saved snapshot instead of the live API:
 
@@ -192,3 +202,15 @@ Phase 3 introduced:
 - Sentiment balance ratios.
 - Interpretable keyword category features.
 - A documented feature catalog with leakage notes.
+
+## Phase 4 Upgrade Notes
+
+Phase 4 introduced:
+
+- A shared model registry in `src/model_specs.py`.
+- Mean and median baselines.
+- Additional sklearn model families.
+- `GridSearchCV` hyperparameter tuning for configured models.
+- Cross-validation metrics for R2, RMSE, MAE, and MSE.
+- Holdout metrics for R2, adjusted R2, RMSE, MAE, median absolute error, and MSE.
+- Native feature importance extraction for compatible models.

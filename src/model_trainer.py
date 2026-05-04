@@ -1,216 +1,216 @@
 """
-Model training and evaluation functionality
+Model training and evaluation functionality.
 """
 
-import pandas as pd
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.preprocessing import StandardScaler
-from config.config import RANDOM_STATE, TEST_SIZE, RIDGE_ALPHAS, OUTPUT_DIR
+import pandas as pd
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_squared_error,
+    median_absolute_error,
+    r2_score,
+)
+from sklearn.model_selection import GridSearchCV, KFold, train_test_split
+from sklearn.pipeline import Pipeline
+
+from config.config import RANDOM_STATE, TEST_SIZE
 from src.evaluator import ModelEvaluator
-import os
+from src.model_specs import ModelSpec, get_model_specs, get_tuning_grid
 
 
 class ModelTrainer:
-    """Handles model training and evaluation"""
-    
+    """Handles model training, tuning, and holdout evaluation."""
+
     def __init__(self):
-        """Initialize model trainer"""
+        """Initialize model trainer."""
         self.evaluator = ModelEvaluator()
-    
+
     def train_and_evaluate_models(self, X: pd.DataFrame, y: pd.Series) -> tuple:
         """
-        Train and evaluate all three models on the dataset
-        
-        Args:
-            X: Feature matrix
-            y: Target values
-            
-        Returns:
-            Tuple of (best_model, feature_importance_df)
+        Train, tune, and evaluate all registered models on the dataset.
         """
-        # Split data into training and testing sets
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE
+            X,
+            y,
+            test_size=TEST_SIZE,
+            random_state=RANDOM_STATE,
         )
 
-        # Scale features for Ridge regression
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
-
-        # Train all models and collect results
         results = []
+        trained_models = {}
         feature_importances = {}
-        
-        # 1. Linear Regression Model
-        lr_model, lr_results, lr_importance = self._train_linear_regression(
-            X_train, X_test, y_train, y_test
-        )
-        results.append(lr_results)
-        feature_importances['Linear Regression'] = lr_importance
-        
-        # 2. Random Forest Model
-        rf_model, rf_results, rf_importance = self._train_random_forest(
-            X_train, X_test, y_train, y_test
-        )
-        results.append(rf_results)
-        feature_importances['Random Forest'] = rf_importance
-        
-        # 3. Ridge Regression Model
-        ridge_model, ridge_results, ridge_importance = self._train_ridge_regression(
-            X_train_scaled, X_test_scaled, y_train, y_test, X.columns
-        )
-        results.append(ridge_results)
-        feature_importances['Ridge Regression'] = ridge_importance
+        predictions = {}
 
-        # Create results table and visualizations
-        results_table = pd.DataFrame(results)
+        for spec in get_model_specs():
+            model, best_params = self._fit_model(spec, X_train, y_train)
+            y_pred = model.predict(X_test)
+            metrics = self._calculate_holdout_metrics(
+                y_test=y_test,
+                y_pred=y_pred,
+                n_features=X.shape[1],
+            )
+            row = {
+                "Model": spec.name,
+                **metrics,
+                "Best Params": self._format_params(best_params),
+            }
+            results.append(row)
+            trained_models[spec.name] = model
+            predictions[spec.name] = y_pred
+            feature_importances[spec.name] = self._extract_feature_importance(
+                model,
+                X.columns,
+                spec,
+            )
+
+            print(
+                f"{spec.name} - RMSE: {metrics['RMSE']:.4f}, "
+                f"MAE: {metrics['MAE']:.4f}, R2: {metrics['R2']:.4f}"
+            )
+            if best_params:
+                print(f"  Best params: {self._format_params(best_params)}")
+
+        results_table = pd.DataFrame(results).sort_values("R2", ascending=False)
         self.evaluator.create_performance_comparison_plot(results_table)
         self.evaluator.create_feature_importance_plots(feature_importances)
 
-        # Find and return best model
         best_model, best_importance = self._find_best_model(
-            results_table, 
-            {'Linear Regression': lr_model, 'Random Forest': rf_model, 'Ridge Regression': ridge_model},
+            results_table,
+            trained_models,
             feature_importances,
-            y_test
         )
+        best_model_name = results_table.iloc[0]["Model"]
+        self.evaluator.create_residual_plot(predictions[best_model_name], y_test, best_model_name)
+        self.evaluator.create_prediction_scatter_plot(y_test, predictions[best_model_name], best_model_name)
 
         print("\nModel Performance Comparison:")
-        print(results_table.sort_values('R2', ascending=False).to_string(index=False))
+        display_columns = [
+            "Model",
+            "RMSE",
+            "MAE",
+            "Median AE",
+            "MSE",
+            "R2",
+            "Adjusted R2",
+            "Best Params",
+        ]
+        print(results_table[display_columns].to_string(index=False))
 
         return best_model, best_importance
-    
-    def _train_linear_regression(self, X_train, X_test, y_train, y_test):
-        """Train Linear Regression model"""
-        print("\nTraining Linear Regression model")
-        
-        model = LinearRegression()
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        
-        mse = mean_squared_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
-        
-        print(f"Linear Regression - MSE: {mse:.4f}, R2: {r2:.4f}")
-        
-        # Feature importance
-        importance = pd.DataFrame({
-            'Feature': X_train.columns,
-            'Importance': np.abs(model.coef_)
-        }).sort_values('Importance', ascending=False)
-        
-        print("Top 5 important features for Linear Regression:")
-        print(importance.head(5).to_string(index=False))
-        
-        # Create residual plot
-        self.evaluator.create_residual_plot(y_pred, y_test, 'Linear Regression')
-        
-        return model, {'Model': 'Linear Regression', 'MSE': mse, 'R2': r2}, importance
-    
-    def _train_random_forest(self, X_train, X_test, y_train, y_test):
-        """Train Random Forest model"""
-        print("\nTraining Random Forest model")
-        
-        model = RandomForestRegressor(n_estimators=100, random_state=RANDOM_STATE)
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        
-        mse = mean_squared_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
-        
-        print(f"Random Forest - MSE: {mse:.4f}, R2: {r2:.4f}")
-        
-        # Feature importance
-        importance = pd.DataFrame({
-            'Feature': X_train.columns,
-            'Importance': model.feature_importances_
-        }).sort_values('Importance', ascending=False)
-        
-        print("Top 5 important features for Random Forest:")
-        print(importance.head(5).to_string(index=False))
-        
-        # Create residual plot
-        self.evaluator.create_residual_plot(y_pred, y_test, 'Random Forest')
-        
-        return model, {'Model': 'Random Forest', 'MSE': mse, 'R2': r2}, importance
-    
-    def _train_ridge_regression(self, X_train_scaled, X_test_scaled, y_train, y_test, feature_names):
-        """Train Ridge Regression model with alpha tuning"""
-        print("\nTraining Ridge Regression model")
-        
-        # Test different alpha values
-        ridge_r2_scores = []
-        for alpha in RIDGE_ALPHAS:
-            ridge = Ridge(alpha=alpha, random_state=RANDOM_STATE)
-            ridge.fit(X_train_scaled, y_train)
-            pred = ridge.predict(X_test_scaled)
-            ridge_r2_scores.append(r2_score(y_test, pred))
 
-        # Find best alpha
-        best_alpha_idx = ridge_r2_scores.index(max(ridge_r2_scores))
-        best_alpha = RIDGE_ALPHAS[best_alpha_idx]
-        print(f"Best alpha for Ridge Regression: {best_alpha}")
+    def _fit_model(self, spec: ModelSpec, X_train: pd.DataFrame, y_train: pd.Series) -> tuple[Any, dict]:
+        """Fit a model, using grid search when a tuning grid is configured."""
+        print(f"\nTraining {spec.name}")
+        estimator = spec.build_estimator()
+        tuning_grid = get_tuning_grid(spec)
 
-        # Train final model
-        model = Ridge(alpha=best_alpha, random_state=RANDOM_STATE)
-        model.fit(X_train_scaled, y_train)
-        y_pred = model.predict(X_test_scaled)
-        
+        if not tuning_grid:
+            estimator.fit(X_train, y_train)
+            return estimator, {}
+
+        cv_splits = min(3, len(X_train))
+        if cv_splits < 2:
+            estimator.fit(X_train, y_train)
+            return estimator, {}
+
+        search = GridSearchCV(
+            estimator=estimator,
+            param_grid=tuning_grid,
+            scoring="r2",
+            cv=KFold(n_splits=cv_splits, shuffle=True, random_state=RANDOM_STATE),
+            error_score=np.nan,
+        )
+        try:
+            search.fit(X_train, y_train)
+            return search.best_estimator_, search.best_params_
+        except ValueError as exc:
+            print(f"  Tuning skipped after grid-search failure: {exc}")
+            estimator.fit(X_train, y_train)
+            return estimator, {}
+
+    def _calculate_holdout_metrics(
+        self,
+        *,
+        y_test: pd.Series,
+        y_pred: np.ndarray,
+        n_features: int,
+    ) -> dict[str, float]:
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
-        
-        print(f"Ridge Regression - MSE: {mse:.4f}, R2: {r2:.4f}")
-        
-        # Feature importance
-        importance = pd.DataFrame({
-            'Feature': feature_names,
-            'Importance': np.abs(model.coef_)
-        }).sort_values('Importance', ascending=False)
-        
-        print("Top 5 important features for Ridge Regression:")
-        print(importance.head(5).to_string(index=False))
-        
-        # Create residual plot
-        self.evaluator.create_residual_plot(y_pred, y_test, 'Ridge Regression')
-        
-        # Plot alpha tuning results
-        self._plot_ridge_alpha_tuning(RIDGE_ALPHAS, ridge_r2_scores, best_alpha)
-        
-        return model, {'Model': 'Ridge Regression', 'MSE': mse, 'R2': r2}, importance
-    
-    def _plot_ridge_alpha_tuning(self, alphas, r2_scores, best_alpha):
-        """Plot Ridge regression alpha tuning results"""
-        plt.figure(figsize=(10, 6))
-        plt.plot(alphas, r2_scores, 'o-')
-        plt.axvline(x=best_alpha, color='red', linestyle='--', label=f'Best alpha: {best_alpha}')
-        plt.xscale('log')
-        plt.xlabel('Alpha (Regularization Strength)')
-        plt.ylabel('R2 Score')
-        plt.title('Ridge Regression: Alpha vs R2 Score')
-        plt.legend()
-        plt.grid(True, linestyle='--', alpha=0.7)
-        plt.savefig(os.path.join(OUTPUT_DIR, 'ridge_alpha_tuning.png'))
-        plt.close()
-    
-    def _find_best_model(self, results_table, models_dict, feature_importances, y_test):
-        """Find and return the best performing model"""
-        best_row = results_table.loc[results_table['R2'].idxmax()]
-        best_model_name = best_row['Model']
+        return {
+            "MSE": mse,
+            "RMSE": float(np.sqrt(mse)),
+            "MAE": mean_absolute_error(y_test, y_pred),
+            "Median AE": median_absolute_error(y_test, y_pred),
+            "R2": r2,
+            "Adjusted R2": self._adjusted_r2(r2, n_samples=len(y_test), n_features=n_features),
+        }
+
+    def _adjusted_r2(self, r2: float, *, n_samples: int, n_features: int) -> float:
+        denominator = n_samples - n_features - 1
+        if denominator <= 0:
+            return np.nan
+        return 1 - (1 - r2) * (n_samples - 1) / denominator
+
+    def _extract_feature_importance(
+        self,
+        model: Any,
+        feature_names: pd.Index,
+        spec: ModelSpec,
+    ) -> pd.DataFrame:
+        if not spec.supports_native_importance:
+            return pd.DataFrame(columns=["Feature", "Importance"])
+
+        fitted_model = model.named_steps["model"] if isinstance(model, Pipeline) else model
+        if hasattr(fitted_model, "coef_"):
+            raw_importance = np.ravel(np.abs(fitted_model.coef_))
+        elif hasattr(fitted_model, "feature_importances_"):
+            raw_importance = np.ravel(fitted_model.feature_importances_)
+        else:
+            return pd.DataFrame(columns=["Feature", "Importance"])
+
+        if len(raw_importance) != len(feature_names):
+            return pd.DataFrame(columns=["Feature", "Importance"])
+
+        return pd.DataFrame({
+            "Feature": feature_names,
+            "Importance": raw_importance,
+        }).sort_values("Importance", ascending=False)
+
+    def _format_params(self, params: dict[str, Any]) -> str:
+        if not params:
+            return ""
+        cleaned_params = {
+            key.replace("model__", ""): value
+            for key, value in params.items()
+        }
+        return ", ".join(f"{key}={value}" for key, value in sorted(cleaned_params.items()))
+
+    def _find_best_model(
+        self,
+        results_table: pd.DataFrame,
+        models_dict: dict[str, Any],
+        feature_importances: dict[str, pd.DataFrame],
+    ) -> tuple[Any, pd.DataFrame]:
+        """Find and return the best performing model."""
+        best_row = results_table.loc[results_table["R2"].idxmax()]
+        best_model_name = best_row["Model"]
         best_model = models_dict[best_model_name]
-        best_importance = feature_importances[best_model_name]
-        
-        print(f"\nBest model: {best_model_name}")
-        
-        # Print most important feature for each model
-        print("\nMost important feature for each model:")
+        best_importance = feature_importances.get(best_model_name)
+
+        print(f"\nBest holdout model: {best_model_name}")
+        print("\nMost important feature for models with native importances:")
         for model_name, importance_df in feature_importances.items():
+            if importance_df is None or importance_df.empty or importance_df["Importance"].sum() == 0:
+                continue
             top_feature = importance_df.iloc[0]
-            print(f"{model_name}: {top_feature['Feature']} (Importance: {top_feature['Importance']:.4f})")
-        
+            print(
+                f"{model_name}: {top_feature['Feature']} "
+                f"(Importance: {top_feature['Importance']:.4f})"
+            )
+
         return best_model, best_importance

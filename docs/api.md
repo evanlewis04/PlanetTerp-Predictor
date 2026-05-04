@@ -31,6 +31,19 @@ http://127.0.0.1:5173
 By default the frontend reads from `http://127.0.0.1:8000`. Override that with
 `VITE_API_BASE_URL` when the backend is hosted elsewhere.
 
+## Dashboard Smoke Test
+
+With the API and dashboard running locally:
+
+```powershell
+cd app
+$env:NODE_PATH="C:\Users\aruba\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules"
+npm run smoke
+```
+
+The smoke test uses Playwright with the local Microsoft Edge executable. Override
+`DASHBOARD_URL` or `EDGE_PATH` if either default is different on another machine.
+
 ## Endpoints
 
 ```text

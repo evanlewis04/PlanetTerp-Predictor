@@ -1,0 +1,34 @@
+# Git and local editor state
+.git/
+.idea/
+.vscode/
+
+# Python local state
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Frontend local state
+app/node_modules/
+app/dist/
+app/.vite/
+
+# Local generated artifacts mounted by Compose when needed
+data/raw/*.json
+data/processed/*.json
+data/processed/*.csv
+experiments/runs/*
+outputs/*.png
+outputs/*.jpg
+outputs/*.pdf
+
+# Misc
+*.log
+.env
+.DS_Store
+Thumbs.db

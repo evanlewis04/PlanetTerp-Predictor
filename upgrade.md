@@ -78,7 +78,7 @@ Completed so far:
 - Added structured settings with `PLANETTERP_` environment variable overrides.
 - Added `.env.example`.
 - Preserved compatibility with the original `main.py`, `src/`, `config/`, and `utils/` modules.
-- Cleaned terminal metric labels from `R²` to `R2` for Windows console compatibility.
+- Cleaned terminal metric labels from `R2` to `R2` for Windows console compatibility.
 - Updated `README.md` with CLI and setup instructions.
 
 ### 1. Package And Environment Cleanup
@@ -194,7 +194,7 @@ The current project uses VADER sentiment. Keep it as a baseline, then add richer
 - Keyword/category features for difficulty, clarity, helpfulness, workload, exams, grading, lectures, and attendance.
 - Sentence-transformer embeddings for semantic review representation.
 
-Professional note: text embeddings may improve R², but they also make interpretability harder. The dashboard should show both high-performing and interpretable model variants.
+Professional note: text embeddings may improve R2, but they also make interpretability harder. The dashboard should show both high-performing and interpretable model variants.
 
 ### 3. Leakage Review
 
@@ -266,8 +266,8 @@ Tune at least:
 
 Use multiple metrics:
 
-- R².
-- Adjusted R².
+- R2.
+- Adjusted R2.
 - RMSE.
 - MAE.
 - Median absolute error.
@@ -283,11 +283,11 @@ Add visual diagnostics:
 - Feature importance.
 - SHAP values for tree-based models.
 
-### 5. Improve R² Responsibly
+### 5. Improve R2 Responsibly
 
-R² improvement should come from better signal, not accidental leakage.
+R2 improvement should come from better signal, not accidental leakage.
 
-Recommended R² improvement strategy:
+Recommended R2 improvement strategy:
 
 1. Increase dataset size beyond the default 1000 professors if the API permits.
 2. Tune `MIN_REVIEWS` and compare performance by review-count threshold.
@@ -298,7 +298,7 @@ Recommended R² improvement strategy:
 7. Try target transformations only if rating distribution suggests it.
 8. Evaluate on a held-out test set that is not used during tuning.
 
-The final dashboard should display both the best R² model and the best interpretable model.
+The final dashboard should display both the best R2 model and the best interpretable model.
 
 ## Phase 5: Experiment Tracking And Model Registry
 
@@ -415,7 +415,7 @@ Create these main views:
 Display:
 
 - Latest run status.
-- Best model by R².
+- Best model by R2.
 - Best model by MAE.
 - Number of professors and reviews used.
 - Rating distribution.
@@ -436,11 +436,11 @@ Display:
 Display a sortable table with:
 
 - Model name.
-- R².
+- R2.
 - RMSE.
 - MAE.
-- Cross-validation R² mean.
-- Cross-validation R² standard deviation.
+- Cross-validation R2 mean.
+- Cross-validation R2 standard deviation.
 - Training time.
 - Feature set used.
 
@@ -491,6 +491,15 @@ This turns the project from a static report into an interactive tool.
 
 ## Phase 8: Testing
 
+Status: implemented in the first Phase 8 upgrade pass.
+
+Completed so far:
+
+- Added Python `unittest` coverage for dataset summary generation, feature extraction helpers, grade/course parsing, and local experiment repository reads.
+- Added model registry endpoint-shape coverage through direct API function testing.
+- Added a frontend smoke script that checks dashboard navigation, prediction, failed responses, console errors, and mobile overview rendering.
+- Verified the new tests with `python -m unittest discover -s tests`, `npm run build`, and `npm run smoke`.
+
 Add automated tests for:
 
 - Grade mapping.
@@ -521,6 +530,17 @@ Frontend tests:
 
 ## Phase 9: Documentation
 
+Status: implemented in the first Phase 9 upgrade pass.
+
+Completed so far:
+
+- Rewrote `README.md` as a professional project overview with setup, workflows, testing, dashboard screenshots, and documentation links.
+- Added `docs/data_dictionary.md` for raw snapshots, processed summaries, feature CSVs, and experiment run artifacts.
+- Added `docs/methodology.md` for data, validation, target, feature, modeling, evaluation, interpretation, and prediction methodology.
+- Added `docs/dashboard.md` with dashboard view descriptions and screenshots.
+- Added `docs/limitations.md` with data, modeling, prediction, engineering, and responsible-use limitations.
+- Added `docs/case_study.md` with the current smoke run metrics, feature signals, and next improvement path.
+
 Upgrade documentation so the project is portfolio-ready:
 
 - Rewrite `README.md` with a professional project overview.
@@ -530,9 +550,20 @@ Upgrade documentation so the project is portfolio-ready:
 - Add interpretation notes.
 - Add known limitations.
 - Add screenshots of the dashboard.
-- Add a short technical case study explaining how R² was improved.
+- Add a short technical case study explaining how R2 was improved.
 
 ## Phase 10: Deployment Options
+
+Status: implemented in the first Phase 10 deployment pass.
+
+Completed so far:
+
+- Added `Dockerfile.api` for the FastAPI/backend package.
+- Added `app/Dockerfile` and `app/nginx.conf` for a production React build served by Nginx.
+- Added `docker-compose.yml` with API and frontend services.
+- Mounted `data/`, `experiments/`, and `outputs/` into the API container for persistent local artifacts.
+- Added `.dockerignore` to keep caches and generated local artifacts out of Docker build context.
+- Added `docs/deployment.md` and README deployment instructions.
 
 Possible deployment paths:
 
@@ -576,9 +607,9 @@ The upgrade is complete when:
 - Metrics are saved in structured files, not only printed.
 - A frontend displays model statistics, plots, and comparisons.
 - The project has tests for core data and modeling logic.
-- The best model has a clearly documented R² improvement attempt.
+- The best model has a clearly documented R2 improvement attempt.
 - The dashboard explains both performance and limitations.
 
 ## Brief Summary
 
-This upgrade plan turns the project into a professional end-to-end data science application. The main work is to make the data pipeline reproducible, expand feature engineering, compare many more model types, tune models systematically to improve R², save experiment artifacts, expose results through a FastAPI backend, and build a React frontend that displays metrics, plots, model comparisons, and interactive predictions.
+This upgrade plan turns the project into a professional end-to-end data science application. The main work is to make the data pipeline reproducible, expand feature engineering, compare many more model types, tune models systematically to improve R2, save experiment artifacts, expose results through a FastAPI backend, and build a React frontend that displays metrics, plots, model comparisons, and interactive predictions.

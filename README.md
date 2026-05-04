@@ -1,31 +1,60 @@
 # PlanetTerp Professor Rating Predictor
 
-This project predicts average professor ratings using PlanetTerp professor and review data. It combines review statistics, course features, expected grade features, and VADER sentiment analysis, then compares several regression models.
+PlanetTerp Professor Rating Predictor is an end-to-end data science application for exploring how professor review, course, grade, and text features relate to average PlanetTerp ratings. The project started as a single analysis script and has been upgraded into a reproducible local ML platform with data snapshots, experiment tracking, saved model artifacts, a FastAPI backend, a React dashboard, and a growing test suite.
 
-The project is being upgraded from a single college-project script into a more professional data science application. Phase 1 adds package metadata, structured settings, and repeatable CLI commands while preserving the original `python main.py` workflow.
+The project is designed to answer three practical questions:
 
-## Current Capabilities
+1. What data was used, and how reliable is it?
+2. Which model performs best, and what features drive it?
+3. How can someone inspect metrics, plots, saved runs, and predictions without reading Python logs?
 
-- Fetch professor and review data from the PlanetTerp API.
-- Filter professors by minimum review count.
-- Extract course, grade, review, and sentiment features.
-- Extract richer Phase 3 features for course mix, review length/readability, expected-grade distribution, sentiment balance, and keyword categories.
-- Train and compare:
-  - Mean and median baselines
-  - Linear Regression
-  - Ridge Regression
-  - Lasso Regression
-  - Elastic Net
-  - Random Forest Regression
-  - Extra Trees Regression
-  - Gradient Boosting Regression
-  - Hist Gradient Boosting Regression
-  - KNN Regression
-  - Support Vector Regression
-- Evaluate models with cross-validation.
-- Tune configured models with `GridSearchCV`.
-- Generate PNG visualizations in `outputs/`.
-- Explore saved runs, metrics, plots, model metadata, feature importance, and predictions in a React dashboard.
+![Dashboard overview](docs/images/dashboard-overview.png)
+
+## Highlights
+
+- Fetches professor and review data from the PlanetTerp API.
+- Saves timestamped raw snapshots in `data/raw/` for reproducible experiments.
+- Builds dataset summaries and model-ready feature CSVs in `data/processed/`.
+- Extracts 60+ features covering review volume, review text, sentiment, course mix, expected grades, keyword categories, and readability.
+- Benchmarks mean and median baselines plus linear, regularized, tree, boosting, KNN, and SVR models.
+- Runs compact `GridSearchCV` tuning for supported model families.
+- Saves local experiment runs with metadata, metrics, plots, feature importance, and `joblib` model bundles.
+- Exposes run metadata, metrics, plots, model registry data, predictions, and training through FastAPI.
+- Provides a React/Vite dashboard for browsing runs, model metrics, plots, feature importance, and simple predictions.
+- Includes Python unit tests and a browser smoke test for the dashboard.
+
+## Current Example Result
+
+The committed local smoke run `20260504_102211_phase5-smoke` used an 80-professor snapshot and retained 41 model-ready professor rows. In that small local run:
+
+| Model | Holdout R2 | RMSE | MAE |
+| --- | ---: | ---: | ---: |
+| Random Forest | 0.378 | 0.640 | 0.601 |
+| Elastic Net | 0.327 | 0.666 | 0.563 |
+| Lasso Regression | 0.326 | 0.666 | 0.580 |
+
+These numbers are useful as a functional smoke test, not a final claim about model quality. See [docs/case_study.md](docs/case_study.md) and [docs/limitations.md](docs/limitations.md) for interpretation.
+
+## Project Structure
+
+```text
+.
+|-- app/                    # React + TypeScript dashboard
+|-- api/                    # FastAPI backend
+|-- config/                 # Legacy-compatible config constants
+|-- data/                   # Ignored raw and processed local artifacts
+|-- docs/                   # Methodology, API, data, and dashboard docs
+|-- experiments/            # Ignored local experiment run artifacts
+|-- outputs/                # Generated plots
+|-- planetterp_predictor/   # Package CLI, settings, data artifacts, tracking
+|-- src/                    # Data, feature, model, and evaluation modules
+|-- tests/                  # Python unit tests
+|-- utils/                  # Shared helper functions
+|-- main.py                 # Original analysis entry point
+|-- pyproject.toml
+|-- requirements.txt
+`-- upgrade.md
+```
 
 ## Setup
 
@@ -41,120 +70,135 @@ Or create a fresh environment:
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-For editable package development, use:
-
-```powershell
 .\.venv\Scripts\python.exe -m pip install -e .
 ```
 
-For development tooling after Phase 1:
+Install frontend dependencies:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+cd app
+npm install
 ```
 
-## Running The Project
+## Data And Training Workflows
 
-Original script entry point:
+Fetch data and save a reproducible snapshot:
 
 ```powershell
-.\.venv\Scripts\python.exe main.py
+.\.venv\Scripts\python.exe -m planetterp_predictor data fetch --max-professors 80 --min-reviews 1
 ```
 
-New package CLI:
-
-```powershell
-.\.venv\Scripts\python.exe -m planetterp_predictor run
-```
-
-Quick smoke run with fewer professors and a lower review threshold:
-
-```powershell
-.\.venv\Scripts\python.exe -m planetterp_predictor run --max-professors 80 --min-reviews 1
-```
-
-Fetch data and report retained sample size without training models:
-
-```powershell
-.\.venv\Scripts\python.exe -m planetterp_predictor data fetch --max-professors 20 --min-reviews 1
-```
-
-The `data fetch` command now saves a reproducible raw JSON snapshot in `data/raw/` and a dataset summary in `data/processed/`.
-
-Validate the latest saved snapshot:
+Validate the latest snapshot:
 
 ```powershell
 .\.venv\Scripts\python.exe -m planetterp_predictor data validate --snapshot latest
 ```
 
-Generate or refresh a dataset summary from the latest snapshot:
-
-```powershell
-.\.venv\Scripts\python.exe -m planetterp_predictor data summary --snapshot latest --min-reviews 1
-```
-
-Build a processed model-ready feature CSV from the latest snapshot:
+Build a model-ready feature CSV:
 
 ```powershell
 .\.venv\Scripts\python.exe -m planetterp_predictor data build-features --snapshot latest --min-reviews 1
 ```
 
-The expanded feature set is documented in `docs/feature_catalog.md`.
-Model families, metrics, and tuning behavior are documented in `docs/modeling.md`.
-
-Train from a saved snapshot instead of the live API:
+Train from a saved snapshot and save experiment artifacts:
 
 ```powershell
-.\.venv\Scripts\python.exe -m planetterp_predictor run --snapshot latest --min-reviews 1
+.\.venv\Scripts\python.exe -m planetterp_predictor run --snapshot latest --min-reviews 1 --experiment-name local-smoke
 ```
 
-Save a named experiment run:
+The original script remains available:
 
 ```powershell
-.\.venv\Scripts\python.exe -m planetterp_predictor run --snapshot latest --min-reviews 1 --experiment-name phase5-smoke
+.\.venv\Scripts\python.exe main.py
 ```
 
-Experiment tracking is documented in `docs/experiments.md`.
+## API And Dashboard
 
-Start the backend API:
+Start the FastAPI backend:
 
 ```powershell
 .\.venv\Scripts\python.exe -m planetterp_predictor serve-api --host 127.0.0.1 --port 8000
 ```
 
-Backend API usage is documented in `docs/api.md`.
-
-Start the frontend dashboard in a second terminal:
+Start the dashboard in a second terminal:
 
 ```powershell
 cd app
-npm install
 npm run dev
 ```
 
-The dashboard runs at `http://127.0.0.1:5173` by default and reads the API from
-`http://127.0.0.1:8000`. Set `VITE_API_BASE_URL` before `npm run dev` to use a
-different backend URL.
+Open:
 
-Print effective settings:
-
-```powershell
-.\.venv\Scripts\python.exe -m planetterp_predictor config
+```text
+http://127.0.0.1:5173
 ```
 
-If installed in editable mode, the console script is also available:
+The dashboard reads `http://127.0.0.1:8000` by default. Set `VITE_API_BASE_URL` before `npm run dev` to target another backend.
+
+## Docker Compose Deployment
+
+Phase 10 adds a local Docker Compose deployment for portfolio demos:
 
 ```powershell
-planetterp-predictor run --max-professors 80 --min-reviews 1
+docker compose up --build
 ```
+
+Then open:
+
+```text
+http://127.0.0.1:5173
+```
+
+Compose starts:
+
+- `api`: FastAPI on `http://127.0.0.1:8000`.
+- `frontend`: Nginx-served React build on `http://127.0.0.1:5173`.
+
+The API container mounts local `data/`, `experiments/`, and `outputs/` folders so generated snapshots, saved runs, model bundles, and plots persist on the host. See [docs/deployment.md](docs/deployment.md).
+
+## Testing
+
+Run Python tests:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests
+```
+
+Run the frontend build:
+
+```powershell
+cd app
+npm run build
+```
+
+With the API and dashboard running, run the browser smoke test:
+
+```powershell
+cd app
+$env:NODE_PATH="C:\Users\aruba\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules"
+npm run smoke
+```
+
+The smoke test uses Playwright with the local Microsoft Edge executable. On another machine, set `EDGE_PATH` if Edge is installed somewhere else.
+
+## Documentation
+
+- [docs/dashboard.md](docs/dashboard.md): dashboard views and screenshots.
+- [docs/data_dictionary.md](docs/data_dictionary.md): raw fields, processed artifacts, and feature groups.
+- [docs/methodology.md](docs/methodology.md): data, feature, modeling, and evaluation methodology.
+- [docs/feature_catalog.md](docs/feature_catalog.md): detailed feature catalog and leakage notes.
+- [docs/modeling.md](docs/modeling.md): model families, metrics, and tuning.
+- [docs/experiments.md](docs/experiments.md): local experiment artifacts.
+- [docs/api.md](docs/api.md): FastAPI usage and endpoint examples.
+- [docs/deployment.md](docs/deployment.md): Docker Compose deployment guide.
+- [docs/limitations.md](docs/limitations.md): known caveats and responsible interpretation.
+- [docs/case_study.md](docs/case_study.md): short technical case study.
 
 ## Configuration
 
-Defaults live in `planetterp_predictor/settings.py` and compatibility constants are exported from `config/config.py` for the original modules.
+Defaults live in `planetterp_predictor/settings.py` and can be overridden with `PLANETTERP_` environment variables. See `.env.example` for supported names.
 
-Settings can be overridden with environment variables. Copy `.env.example` as a reference for supported names:
+Common settings:
 
 ```text
 PLANETTERP_MAX_PROFESSORS=1000
@@ -163,116 +207,4 @@ PLANETTERP_CV_FOLDS=10
 PLANETTERP_OUTPUT_DIR=outputs
 ```
 
-The project does not load `.env` files automatically yet. Set variables in your shell before running commands when needed.
-
-## Output Files
-
-The analysis generates files in `outputs/`:
-
-- `cross_validation_results.png`
-- `model_comparison.png`
-- `feature_importance_all_models.png`
-- `linear_regression_residuals.png`
-- `ridge_regression_residuals.png`
-- `random_forest_residuals.png`
-- `ridge_alpha_tuning.png`
-- `prediction_scatter.png` if generated by a later workflow
-
-## Project Structure
-
-```text
-.
-├── planetterp_predictor/       # Phase 1 package entry points and settings
-├── config/                     # Legacy-compatible config constants
-├── data/                       # Ignored raw and processed data artifacts
-├── docs/                       # Feature and methodology documentation
-├── src/                        # Data, feature, model, and evaluation modules
-├── utils/                      # Shared helper functions
-├── outputs/                    # Generated plots
-├── main.py                     # Original analysis entry point
-├── pyproject.toml              # Package and dev-tool configuration
-├── requirements.txt            # Runtime dependencies
-├── upgrade.md                  # Professional upgrade roadmap
-└── README.md
-```
-
-Note: the Phase 7 frontend lives in `app/`.
-
-## Phase 1 Upgrade Notes
-
-Phase 1 introduced:
-
-- Installable package metadata in `pyproject.toml`.
-- `python -m planetterp_predictor` module execution.
-- `planetterp-predictor` console script support.
-- Structured settings with environment variable overrides.
-- `.env.example` documenting supported runtime settings.
-- Cleaner ASCII terminal output for Windows compatibility.
-
-Next phases should focus on data snapshotting, experiment tracking, stronger feature engineering, expanded model families, a backend API, and a frontend dashboard.
-
-## Phase 2 Upgrade Notes
-
-Phase 2 introduced:
-
-- Timestamped raw API snapshots in `data/raw/`.
-- Processed dataset summaries in `data/processed/`.
-- Validation reports for professor/review records.
-- Feature CSV generation from saved snapshots.
-- Snapshot-aware training with `run --snapshot`.
-
-Generated raw and processed data artifacts are ignored by Git so local experiments do not clutter commits.
-
-## Phase 3 Upgrade Notes
-
-Phase 3 introduced:
-
-- Expanded review length and readability features.
-- Expanded course-level mix features.
-- Expanded expected-grade distribution features.
-- Sentiment balance ratios.
-- Interpretable keyword category features.
-- A documented feature catalog with leakage notes.
-
-## Phase 4 Upgrade Notes
-
-Phase 4 introduced:
-
-- A shared model registry in `src/model_specs.py`.
-- Mean and median baselines.
-- Additional sklearn model families.
-- `GridSearchCV` hyperparameter tuning for configured models.
-- Cross-validation metrics for R2, RMSE, MAE, and MSE.
-- Holdout metrics for R2, adjusted R2, RMSE, MAE, median absolute error, and MSE.
-- Native feature importance extraction for compatible models.
-
-## Phase 5 Upgrade Notes
-
-Phase 5 introduced:
-
-- Local experiment run folders in `experiments/runs/`.
-- Metadata capture for settings, Git commit, snapshot, feature columns, target summary, and best model.
-- Saved cross-validation and holdout metrics as CSV files.
-- Saved best-model feature importance when available.
-- Saved best model bundles with `joblib`.
-- Copied current output plots into each experiment run folder.
-
-## Phase 6 Upgrade Notes
-
-Phase 6 introduced:
-
-- A FastAPI backend in `api/`.
-- Read endpoints for experiment runs, metrics, plots, and model registry metadata.
-- Prediction from saved `best_model.joblib` bundles.
-- Synchronous API-triggered training.
-- Static serving for copied experiment plots.
-- A `serve-api` CLI command.
-
-## Phase 7 Upgrade Notes
-
-Phase 7 introduced:
-
-- A React, TypeScript, and Vite frontend in `app/`.
-- Dashboard views for overview, dataset metadata, model comparison, feature importance, plots, prediction, and saved runs.
-- API integration for health, runs, run metadata, metrics, plots, model registry, and predictions.
-- Configurable `VITE_API_BASE_URL` support for alternate FastAPI hosts.
+The project does not automatically load `.env` files. Set variables in the active shell before running commands.

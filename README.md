@@ -70,6 +70,32 @@ Fetch data and report retained sample size without training models:
 .\.venv\Scripts\python.exe -m planetterp_predictor data fetch --max-professors 20 --min-reviews 1
 ```
 
+The `data fetch` command now saves a reproducible raw JSON snapshot in `data/raw/` and a dataset summary in `data/processed/`.
+
+Validate the latest saved snapshot:
+
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor data validate --snapshot latest
+```
+
+Generate or refresh a dataset summary from the latest snapshot:
+
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor data summary --snapshot latest --min-reviews 1
+```
+
+Build a processed model-ready feature CSV from the latest snapshot:
+
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor data build-features --snapshot latest --min-reviews 1
+```
+
+Train from a saved snapshot instead of the live API:
+
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor run --snapshot latest --min-reviews 1
+```
+
 Print effective settings:
 
 ```powershell
@@ -116,6 +142,7 @@ The analysis generates files in `outputs/`:
 .
 ├── planetterp_predictor/       # Phase 1 package entry points and settings
 ├── config/                     # Legacy-compatible config constants
+├── data/                       # Ignored raw and processed data artifacts
 ├── src/                        # Data, feature, model, and evaluation modules
 ├── utils/                      # Shared helper functions
 ├── outputs/                    # Generated plots
@@ -138,3 +165,15 @@ Phase 1 introduced:
 - Cleaner ASCII terminal output for Windows compatibility.
 
 Next phases should focus on data snapshotting, experiment tracking, stronger feature engineering, expanded model families, a backend API, and a frontend dashboard.
+
+## Phase 2 Upgrade Notes
+
+Phase 2 introduced:
+
+- Timestamped raw API snapshots in `data/raw/`.
+- Processed dataset summaries in `data/processed/`.
+- Validation reports for professor/review records.
+- Feature CSV generation from saved snapshots.
+- Snapshot-aware training with `run --snapshot`.
+
+Generated raw and processed data artifacts are ignored by Git so local experiments do not clutter commits.

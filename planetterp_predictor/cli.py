@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 from typing import Sequence
 
 from planetterp_predictor.settings import settings
@@ -38,12 +39,51 @@ def _add_dataset_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_min_reviews_arg(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--min-reviews",
+        type=_non_negative_int,
+        default=settings.min_reviews,
+        help=f"Minimum reviews required per professor. Default: {settings.min_reviews}.",
+    )
+
+
+def _add_snapshot_arg(parser: argparse.ArgumentParser, *, required: bool = False) -> None:
+    parser.add_argument(
+        "--snapshot",
+        default=None if required else "latest",
+        required=required,
+        help="Path to a raw professors snapshot JSON file, or 'latest'.",
+    )
+
+
+def _resolve_snapshot_path(snapshot: str | None) -> Path | None:
+    from planetterp_predictor.data_artifacts import latest_raw_snapshot
+
+    if snapshot is None:
+        return None
+    if snapshot == "latest":
+        return latest_raw_snapshot()
+    return Path(snapshot)
+
+
 def run_analysis(args: argparse.Namespace) -> int:
     from main import run_planetterp_analysis
+    from planetterp_predictor.data_artifacts import load_raw_snapshot
+
+    professors = None
+    snapshot_path = _resolve_snapshot_path(args.snapshot)
+    if args.snapshot and snapshot_path is None:
+        print("No raw data snapshot found. Run `data fetch` first.")
+        return 1
+    if snapshot_path is not None:
+        professors, metadata = load_raw_snapshot(snapshot_path)
+        print(f"Using snapshot: {metadata.get('snapshot_path', snapshot_path)}")
 
     model, _, X, _ = run_planetterp_analysis(
         num_professors=args.max_professors,
         min_reviews=args.min_reviews,
+        professors=professors,
     )
     if model is None or X is None:
         return 1
@@ -52,17 +92,111 @@ def run_analysis(args: argparse.Namespace) -> int:
 
 def fetch_data(args: argparse.Namespace) -> int:
     from src.data_processor import PlanetTerpDataProcessor
-    from utils.helpers import filter_valid_reviews
+    from planetterp_predictor.data_artifacts import (
+        build_dataset_summary,
+        save_dataset_summary,
+        save_raw_snapshot,
+    )
 
     processor = PlanetTerpDataProcessor()
     professors = processor.fetch_professor_data(max_professors=args.max_professors)
-    valid_professors = filter_valid_reviews(professors, args.min_reviews)
+    snapshot_path = save_raw_snapshot(
+        professors,
+        max_professors=args.max_professors,
+        min_reviews=args.min_reviews,
+    )
+    summary = build_dataset_summary(
+        professors,
+        min_reviews=args.min_reviews,
+        metadata={"snapshot_path": str(snapshot_path)},
+    )
+    summary_path = save_dataset_summary(summary, label=snapshot_path.stem.removeprefix("professors_"))
 
     print(json.dumps({
         "fetched_professors": len(professors),
-        "valid_professors": len(valid_professors),
+        "valid_professors": summary["retained_professor_count"],
         "min_reviews": args.min_reviews,
+        "snapshot_path": str(snapshot_path),
+        "summary_path": str(summary_path),
     }, indent=2))
+    return 0
+
+
+def validate_data(args: argparse.Namespace) -> int:
+    from planetterp_predictor.data_artifacts import load_raw_snapshot
+    from planetterp_predictor.data_validation import validate_professors
+
+    snapshot_path = _resolve_snapshot_path(args.snapshot)
+    if snapshot_path is None:
+        print("No raw data snapshot found. Run `data fetch` first.")
+        return 1
+    professors, metadata = load_raw_snapshot(snapshot_path)
+    report = validate_professors(professors)
+    print(json.dumps({
+        "snapshot": metadata,
+        "validation": report.to_dict(),
+    }, indent=2, sort_keys=True))
+    return 0
+
+
+def summarize_data(args: argparse.Namespace) -> int:
+    from planetterp_predictor.data_artifacts import (
+        build_dataset_summary,
+        load_raw_snapshot,
+        save_dataset_summary,
+    )
+
+    snapshot_path = _resolve_snapshot_path(args.snapshot)
+    if snapshot_path is None:
+        print("No raw data snapshot found. Run `data fetch` first.")
+        return 1
+    professors, metadata = load_raw_snapshot(snapshot_path)
+    summary = build_dataset_summary(professors, min_reviews=args.min_reviews, metadata=metadata)
+    summary_path = save_dataset_summary(summary, label=snapshot_path.stem.removeprefix("professors_"))
+    print(json.dumps({
+        "summary_path": str(summary_path),
+        "professor_count": summary["professor_count"],
+        "retained_professor_count": summary["retained_professor_count"],
+        "total_review_count": summary["total_review_count"],
+        "validation_warnings": summary["validation"]["warnings"],
+    }, indent=2, sort_keys=True))
+    return 0
+
+
+def build_features(args: argparse.Namespace) -> int:
+    from src.feature_extractor import FeatureExtractor
+    from planetterp_predictor.data_artifacts import (
+        build_dataset_summary,
+        load_raw_snapshot,
+        save_dataset_summary,
+        save_features_dataset,
+    )
+    from utils.helpers import filter_valid_reviews
+
+    snapshot_path = _resolve_snapshot_path(args.snapshot)
+    if snapshot_path is None:
+        print("No raw data snapshot found. Run `data fetch` first.")
+        return 1
+
+    professors, metadata = load_raw_snapshot(snapshot_path)
+    valid_professors = filter_valid_reviews(professors, args.min_reviews)
+    X, y = FeatureExtractor().prepare_data_for_modeling(valid_professors)
+    if X is None or y is None:
+        print("Failed to build features: no model-ready professor records found.")
+        return 1
+
+    features = X.assign(avg_rating=y.values)
+    label = snapshot_path.stem.removeprefix("professors_")
+    features_path = save_features_dataset(features, label=label)
+    summary = build_dataset_summary(professors, min_reviews=args.min_reviews, metadata=metadata)
+    summary_path = save_dataset_summary(summary, label=label)
+
+    print(json.dumps({
+        "features_path": str(features_path),
+        "summary_path": str(summary_path),
+        "rows": len(features),
+        "columns": list(features.columns),
+    }, indent=2, sort_keys=True))
     return 0
 
 
@@ -80,6 +214,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     run_parser = subparsers.add_parser("run", help="Run the full training and evaluation workflow.")
     _add_dataset_args(run_parser)
+    run_parser.add_argument(
+        "--snapshot",
+        default=None,
+        help="Optional raw professors snapshot JSON file, or 'latest', to train from saved data.",
+    )
     run_parser.set_defaults(func=run_analysis)
 
     data_parser = subparsers.add_parser("data", help="Data workflow commands.")
@@ -91,6 +230,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_dataset_args(fetch_parser)
     fetch_parser.set_defaults(func=fetch_data)
+
+    validate_parser = data_subparsers.add_parser(
+        "validate",
+        help="Validate a raw professor snapshot.",
+    )
+    _add_snapshot_arg(validate_parser)
+    validate_parser.set_defaults(func=validate_data)
+
+    summary_parser = data_subparsers.add_parser(
+        "summary",
+        help="Create a dataset summary JSON artifact from a raw snapshot.",
+    )
+    _add_min_reviews_arg(summary_parser)
+    _add_snapshot_arg(summary_parser)
+    summary_parser.set_defaults(func=summarize_data)
+
+    features_parser = data_subparsers.add_parser(
+        "build-features",
+        help="Create a processed feature CSV from a raw snapshot.",
+    )
+    _add_min_reviews_arg(features_parser)
+    _add_snapshot_arg(features_parser)
+    features_parser.set_defaults(func=build_features)
 
     config_parser = subparsers.add_parser("config", help="Print effective project settings.")
     config_parser.set_defaults(func=print_config)

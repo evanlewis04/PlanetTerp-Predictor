@@ -40,6 +40,12 @@ Thumbs.db
 outputs/*.png
 outputs/*.jpg
 outputs/*.pdf
+data/raw/*.json
+data/processed/*.json
+data/processed/*.csv
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
 *.log
 
 # Jupyter Notebooks

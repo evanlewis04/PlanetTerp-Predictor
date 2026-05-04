@@ -4,6 +4,7 @@ Main script to run PlanetTerp professor rating prediction analysis
 
 from sklearn.impute import SimpleImputer
 import pandas as pd
+from typing import Any
 from src.data_processor import PlanetTerpDataProcessor
 from src.feature_extractor import FeatureExtractor
 from src.model_trainer import ModelTrainer
@@ -13,7 +14,8 @@ from config.config import MAX_PROFESSORS, MIN_REVIEWS
 
 
 def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
-                           min_reviews: int = MIN_REVIEWS) -> tuple:
+                           min_reviews: int = MIN_REVIEWS,
+                           professors: list[dict[str, Any]] | None = None) -> tuple:
     """
     Complete workflow for PlanetTerp professor rating prediction
     
@@ -27,11 +29,15 @@ def run_planetterp_analysis(num_professors: int = MAX_PROFESSORS,
     print(f"Analysis will fetch and process up to {num_professors} professors with at least {min_reviews} reviews")
     print("="*70)
 
-    # Step 1: Fetch data
-    print("Step 1: Fetching professor data from PlanetTerp API")
-    data_processor = PlanetTerpDataProcessor()
-    professors = data_processor.fetch_professor_data(max_professors=num_professors)
-    print(f"Successfully fetched data for {len(professors)} professors")
+    # Step 1: Fetch or load data
+    if professors is None:
+        print("Step 1: Fetching professor data from PlanetTerp API")
+        data_processor = PlanetTerpDataProcessor()
+        professors = data_processor.fetch_professor_data(max_professors=num_professors)
+        print(f"Successfully fetched data for {len(professors)} professors")
+    else:
+        print("Step 1: Using provided professor dataset")
+        print(f"Loaded data for {len(professors)} professors")
 
     # Step 2: Filter professors with sufficient reviews
     print(f"\nStep 2: Filtering professors with at least {min_reviews} reviews")

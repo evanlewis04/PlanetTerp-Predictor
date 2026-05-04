@@ -112,6 +112,17 @@ Each command should write clear artifacts and metadata.
 
 ## Phase 2: Data Engineering
 
+Status: partially implemented in the first Phase 2 upgrade commit.
+
+Completed so far:
+
+- Added ignored `data/raw/` and `data/processed/` artifact directories.
+- Added timestamped raw professor/review snapshots from PlanetTerp API results.
+- Added dataset summary JSON artifacts with professor, review, rating, department, course, grade, and validation statistics.
+- Added aggregate validation for missing names, malformed review fields, missing/invalid ratings, missing courses, missing expected grades, empty review text, and duplicate reviews.
+- Added `data validate`, `data summary`, and `data build-features` CLI workflows.
+- Added `run --snapshot` so model training can use a saved snapshot instead of live API data.
+
 ### 1. Persist API Snapshots
 
 Instead of fetching live data every run, save raw API responses:

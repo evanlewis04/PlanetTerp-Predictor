@@ -209,6 +209,18 @@ def print_config(_: argparse.Namespace) -> int:
     return 0
 
 
+def serve_api(args: argparse.Namespace) -> int:
+    import uvicorn
+
+    uvicorn.run(
+        "api.main:app",
+        host=args.host,
+        port=args.port,
+        reload=args.reload,
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="planetterp-predictor",
@@ -270,6 +282,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     config_parser = subparsers.add_parser("config", help="Print effective project settings.")
     config_parser.set_defaults(func=print_config)
+
+    serve_parser = subparsers.add_parser("serve-api", help="Start the FastAPI backend.")
+    serve_parser.add_argument("--host", default="127.0.0.1", help="Host to bind. Default: 127.0.0.1.")
+    serve_parser.add_argument("--port", type=int, default=8000, help="Port to bind. Default: 8000.")
+    serve_parser.add_argument("--reload", action="store_true", help="Enable uvicorn auto-reload.")
+    serve_parser.set_defaults(func=serve_api)
 
     return parser
 

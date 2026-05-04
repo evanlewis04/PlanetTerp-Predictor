@@ -117,6 +117,14 @@ Save a named experiment run:
 
 Experiment tracking is documented in `docs/experiments.md`.
 
+Start the backend API:
+
+```powershell
+.\.venv\Scripts\python.exe -m planetterp_predictor serve-api --host 127.0.0.1 --port 8000
+```
+
+Backend API usage is documented in `docs/api.md`.
+
 Print effective settings:
 
 ```powershell
@@ -233,3 +241,14 @@ Phase 5 introduced:
 - Saved best-model feature importance when available.
 - Saved best model bundles with `joblib`.
 - Copied current output plots into each experiment run folder.
+
+## Phase 6 Upgrade Notes
+
+Phase 6 introduced:
+
+- A FastAPI backend in `api/`.
+- Read endpoints for experiment runs, metrics, plots, and model registry metadata.
+- Prediction from saved `best_model.joblib` bundles.
+- Synchronous API-triggered training.
+- Static serving for copied experiment plots.
+- A `serve-api` CLI command.

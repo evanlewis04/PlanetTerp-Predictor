@@ -347,6 +347,18 @@ Prefer scikit-learn `Pipeline` and `ColumnTransformer` objects so preprocessing 
 
 ## Phase 6: Backend API
 
+Status: partially implemented in the first Phase 6 upgrade commit.
+
+Completed so far:
+
+- Added a FastAPI backend under `api/`.
+- Added `/health`, `/api/runs`, `/api/runs/{run_id}`, `/api/runs/{run_id}/metrics`, `/api/runs/{run_id}/plots`, `/api/models`, `/api/predict`, and `/api/train`.
+- Added static plot serving from experiment run folders.
+- Added prediction from saved Phase 5 `best_model.joblib` bundles.
+- Added synchronous training from the API for local/demo usage.
+- Added `planetterp-predictor serve-api`.
+- Added `docs/api.md`.
+
 Add a backend API with FastAPI.
 
 Core endpoints:

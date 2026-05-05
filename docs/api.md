@@ -44,6 +44,18 @@ npm run smoke
 The smoke test uses Playwright with the local Microsoft Edge executable. Override
 `DASHBOARD_URL` or `EDGE_PATH` if either default is different on another machine.
 
+## API Tests
+
+HTTP-level endpoint coverage lives in `tests/test_api_endpoints.py`. It uses FastAPI
+`TestClient` with a temporary experiment run directory, so the tests do not depend on
+local generated artifacts.
+
+Run it with the full Python suite:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests
+```
+
 ## Endpoints
 
 ```text

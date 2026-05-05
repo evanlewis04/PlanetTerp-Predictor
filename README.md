@@ -164,6 +164,8 @@ Run Python tests:
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
+The Python suite includes FastAPI endpoint tests driven through `TestClient`, covering run artifact reads, model registry responses, prediction validation, and 404 handling.
+
 Run the frontend build:
 
 ```powershell
@@ -180,6 +182,8 @@ npm run smoke
 ```
 
 The smoke test uses Playwright with the local Microsoft Edge executable. On another machine, set `EDGE_PATH` if Edge is installed somewhere else.
+
+GitHub Actions CI runs the Python test suite and the frontend production build on pushes and pull requests.
 
 ## Documentation
 

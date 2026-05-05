@@ -68,7 +68,7 @@ planetterp_predictor/
 
 ## Phase 1: Project Foundation
 
-Status: partially implemented in the first Phase 1 upgrade commit.
+Status: implemented for the current platform scope.
 
 Completed so far:
 
@@ -80,6 +80,7 @@ Completed so far:
 - Preserved compatibility with the original `main.py`, `src/`, `config/`, and `utils/` modules.
 - Cleaned terminal metric labels from `R2` to `R2` for Windows console compatibility.
 - Updated `README.md` with CLI and setup instructions.
+- Added CI coverage for Python tests and the frontend production build.
 
 ### 1. Package And Environment Cleanup
 
@@ -112,7 +113,7 @@ Each command should write clear artifacts and metadata.
 
 ## Phase 2: Data Engineering
 
-Status: partially implemented in the first Phase 2 upgrade commit.
+Status: implemented for the current reproducible-data scope.
 
 Completed so far:
 
@@ -164,13 +165,15 @@ The frontend should display this summary.
 
 ## Phase 3: Feature Engineering
 
-Status: partially implemented in the first Phase 3 upgrade commit.
+Status: implemented for the current interpretable-feature scope.
 
 Completed so far:
 
 - Added richer non-rating-derived review length, readability, course mix, expected-grade, sentiment balance, and keyword-category features.
 - Added `docs/feature_catalog.md` to document feature sources, transformations, and leakage risk.
 - Explicitly deferred rating-derived features because they would leak the target into the predictors.
+
+Future candidates include TF-IDF or embedding features, but the current dashboard and model artifacts intentionally favor interpretable, non-rating-derived predictors.
 
 ### 1. Improve Existing Features
 
@@ -210,7 +213,7 @@ Add a documented feature list with:
 
 ## Phase 4: Modeling Upgrade
 
-Status: partially implemented in the first Phase 4 upgrade commit.
+Status: implemented for the current model-benchmarking scope.
 
 Completed so far:
 
@@ -302,7 +305,7 @@ The final dashboard should display both the best R2 model and the best interpret
 
 ## Phase 5: Experiment Tracking And Model Registry
 
-Status: partially implemented in the first Phase 5 upgrade commit.
+Status: implemented for the current local experiment-tracking scope.
 
 Completed so far:
 
@@ -347,7 +350,7 @@ Prefer scikit-learn `Pipeline` and `ColumnTransformer` objects so preprocessing 
 
 ## Phase 6: Backend API
 
-Status: partially implemented in the first Phase 6 upgrade commit.
+Status: implemented for the current FastAPI/dashboard scope.
 
 Completed so far:
 
@@ -358,6 +361,7 @@ Completed so far:
 - Added synchronous training from the API for local/demo usage.
 - Added `planetterp-predictor serve-api`.
 - Added `docs/api.md`.
+- Added HTTP-level FastAPI endpoint tests with temporary run artifacts and prediction fixtures.
 
 Add a backend API with FastAPI.
 

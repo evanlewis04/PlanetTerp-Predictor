@@ -38,32 +38,23 @@ The professional version should be split into clear layers:
 
 ```text
 planetterp_predictor/
-├── app/                         # Frontend application
-│   ├── src/
-│   └── package.json
-├── api/                         # Backend API for dashboard + predictions
-│   ├── main.py
-│   ├── routes/
-│   └── schemas/
-├── config/                      # Environment-aware configuration
-├── data/
-│   ├── raw/                     # Timestamped PlanetTerp API snapshots
-│   ├── interim/                 # Cleaned intermediate datasets
-│   └── processed/               # Model-ready datasets
-├── docs/                        # Project documentation
-├── models/                      # Saved model artifacts and metadata
-├── notebooks/                   # Exploratory analysis only
-├── outputs/                     # Generated plots and static reports
-├── reports/                     # HTML/Markdown reports
-├── src/
-│   ├── data/                    # Ingestion, validation, caching
-│   ├── features/                # Feature engineering pipeline
-│   ├── models/                  # Training, tuning, inference
-│   ├── evaluation/              # Metrics, plots, diagnostics
-│   └── visualization/           # Plot generation helpers
-├── tests/                       # Unit and integration tests
-├── pyproject.toml
-└── README.md
+|-- app/                         # React/Vite dashboard
+|   |-- src/
+|   `-- package.json
+|-- api/                         # FastAPI backend for dashboard + predictions
+|-- config/                      # Legacy-compatible constants
+|-- data/
+|   |-- raw/                     # Timestamped PlanetTerp API snapshots
+|   `-- processed/               # Dataset summaries and feature CSVs
+|-- docs/                        # Methodology, API, dashboard, deployment docs
+|-- experiments/
+|   `-- runs/                    # Saved metrics, plots, metadata, model bundles
+|-- outputs/                     # Generated plots
+|-- planetterp_predictor/        # CLI, settings, data artifacts, tracking
+|-- src/                         # Data, features, models, evaluation
+|-- tests/                       # Unit, API, and training tests
+|-- pyproject.toml
+`-- README.md
 ```
 
 ## Phase 1: Project Foundation
@@ -501,6 +492,8 @@ Completed so far:
 
 - Added Python `unittest` coverage for dataset summary generation, feature extraction helpers, grade/course parsing, and local experiment repository reads.
 - Added model registry endpoint-shape coverage through direct API function testing.
+- Added HTTP-level FastAPI endpoint tests with temporary experiment artifacts.
+- Added small fixture model-training tests for holdout metrics and cross-validation.
 - Added a frontend smoke script that checks dashboard navigation, prediction, failed responses, console errors, and mobile overview rendering.
 - Verified the new tests with `python -m unittest discover -s tests`, `npm run build`, and `npm run smoke`.
 
@@ -519,12 +512,11 @@ Recommended test structure:
 
 ```text
 tests/
-├── test_data_processor.py
-├── test_feature_extractor.py
-├── test_model_training.py
-├── test_evaluation.py
-├── test_api.py
-└── fixtures/
+|-- test_api_endpoints.py
+|-- test_api_repository.py
+|-- test_data_artifacts.py
+|-- test_feature_extractor.py
+`-- test_model_training.py
 ```
 
 Frontend tests:
@@ -580,10 +572,19 @@ Recommended first deployment:
 
 ```text
 Docker Compose
-├── frontend: React/Vite static app
-├── api: FastAPI backend
-└── volume: data, models, outputs, experiments
+|-- frontend: React/Vite static app
+|-- api: FastAPI backend
+`-- volumes: data, outputs, experiments
 ```
+
+## Post-Upgrade Hardening
+
+The original 10-phase upgrade is now complete for a local portfolio deployment. Remaining work should be treated as polish and rigor rather than prerequisite platform construction:
+
+1. Run a larger snapshot and training pass, then update the case study and screenshots with stronger evidence.
+2. Add frontend component tests with Vitest and React Testing Library for empty states, metric tables, prediction errors, and API failure banners.
+3. Add a richer model detail view with selected-model hyperparameters, warning flags, and associated diagnostics.
+4. Consider TF-IDF, SHAP, Optuna, or external boosting libraries only after the current interpretable baseline is well documented on a larger dataset.
 
 ## Suggested Implementation Order
 

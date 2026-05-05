@@ -21,7 +21,7 @@ The project is designed to answer three practical questions:
 - Saves local experiment runs with metadata, metrics, plots, feature importance, and `joblib` model bundles.
 - Exposes run metadata, metrics, plots, model registry data, predictions, and training through FastAPI.
 - Provides a React/Vite dashboard for browsing runs, model metrics, plots, feature importance, and simple predictions.
-- Includes Python unit tests and a browser smoke test for the dashboard.
+- Includes Python unit, API endpoint, and model-training fixture tests plus a browser smoke test for the dashboard.
 
 ## Current Example Result
 
@@ -164,7 +164,7 @@ Run Python tests:
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
-The Python suite includes FastAPI endpoint tests driven through `TestClient`, covering run artifact reads, model registry responses, prediction validation, and 404 handling.
+The Python suite includes FastAPI endpoint tests driven through `TestClient` and small model-training fixture tests, covering run artifact reads, model registry responses, prediction validation, holdout metrics, cross-validation, and 404 handling.
 
 Run the frontend build:
 

@@ -23,56 +23,57 @@ The project improved model development in five main steps:
 4. Added a broader sklearn model registry with baselines, regularized linear models, tree ensembles, boosting, KNN, and SVR.
 5. Saved every experiment run with metrics, plots, feature importances, metadata, and a `joblib` model bundle.
 
-## Example Smoke Run
+## Latest Local Refresh Run
 
 Run:
 
 ```text
-20260504_102211_phase5-smoke
+20260507_185741_live-500-min5
 ```
 
 Snapshot:
 
 ```text
-data/raw/professors_20260503_213043.json
+data/raw/professors_20260507_185648.json
 ```
 
 Sample size:
 
 | Quantity | Value |
 | --- | ---: |
-| Professors fetched | 80 |
-| Model-ready professor rows | 41 |
+| Professors fetched | 500 |
+| Model-ready professor rows | 150 |
+| Minimum reviews | 5 |
 | Feature columns | 61 |
-| Target mean | 3.522 |
-| Target range | 1.0 to 5.0 |
+| Target mean | 3.542 |
+| Target range | 1.44 to 5.0 |
 
 Top holdout results:
 
 | Model | R2 | RMSE | MAE |
 | --- | ---: | ---: | ---: |
-| Random Forest | 0.378 | 0.640 | 0.601 |
-| Elastic Net | 0.327 | 0.666 | 0.563 |
-| Lasso Regression | 0.326 | 0.666 | 0.580 |
-| Extra Trees | 0.292 | 0.683 | 0.630 |
-| Ridge Regression | 0.288 | 0.685 | 0.599 |
+| Extra Trees | 0.808 | 0.339 | 0.278 |
+| Random Forest | 0.807 | 0.340 | 0.285 |
+| Ridge Regression | 0.785 | 0.358 | 0.300 |
+| Lasso Regression | 0.744 | 0.391 | 0.322 |
+| Elastic Net | 0.737 | 0.397 | 0.336 |
 
-The best holdout R2 model in this smoke run was Random Forest. Cross-validation also ranked Random Forest first by R2 mean, but with a high standard deviation. That variance is expected for a small 41-row modeling dataset.
+The best holdout R2 model in this refresh run was Extra Trees, closely followed by Random Forest. Cross-validation also ranked Extra Trees first by R2 mean at 0.762 with a standard deviation of 0.062, which is much more stable than the earlier 41-row smoke run.
 
 ## Feature Signals
 
-Top saved Random Forest feature importances:
+Top saved Extra Trees feature importances:
 
 | Feature | Importance |
 | --- | ---: |
-| `avg_sentiment_compound` | 0.083 |
-| `positive_review_ratio` | 0.065 |
-| `avg_words_per_sentence` | 0.061 |
-| `negative_review_ratio` | 0.049 |
-| `avg_sentiment_neg` | 0.047 |
-| `workload_keyword_count` | 0.034 |
-| `sentiment_variance` | 0.033 |
-| `avg_sentiment_pos` | 0.032 |
+| `avg_sentiment_compound` | 0.125 |
+| `positive_review_ratio` | 0.111 |
+| `avg_sentiment_pos` | 0.096 |
+| `negative_review_ratio` | 0.075 |
+| `avg_sentiment_neg` | 0.064 |
+| `sentiment_variance` | 0.064 |
+| `num_reviews` | 0.042 |
+| `neutral_review_ratio` | 0.042 |
 
 The strongest signals are mostly review-text sentiment and text-shape features. That is plausible, but it also reinforces the need for careful leakage and availability notes.
 
@@ -89,8 +90,7 @@ The result is no longer just a model script. The local app can now:
 
 ## Next Improvements
 
-- Train on larger snapshots before treating performance as stable.
 - Add an ablation experiment that compares feature groups with and without sentiment and expected-grade features.
 - Add permutation importance or SHAP for model-agnostic interpretation.
 - Move prediction-time feature construction into a shared pipeline.
-- Containerize the API, dashboard, and artifact volumes in Phase 10.
+- Add frontend component tests for the dashboard's empty, error, and metric-table states.

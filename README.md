@@ -25,15 +25,15 @@ The project is designed to answer three practical questions:
 
 ## Current Example Result
 
-The committed local smoke run `20260504_102211_phase5-smoke` used an 80-professor snapshot and retained 41 model-ready professor rows. In that small local run:
+The latest local refresh run `20260507_185741_live-500-min5` used a fresh PlanetTerp API pull of 500 professors and retained 150 model-ready professor rows with at least 5 reviews. In that run:
 
 | Model | Holdout R2 | RMSE | MAE |
 | --- | ---: | ---: | ---: |
-| Random Forest | 0.378 | 0.640 | 0.601 |
-| Elastic Net | 0.327 | 0.666 | 0.563 |
-| Lasso Regression | 0.326 | 0.666 | 0.580 |
+| Extra Trees | 0.808 | 0.339 | 0.278 |
+| Random Forest | 0.807 | 0.340 | 0.285 |
+| Ridge Regression | 0.785 | 0.358 | 0.300 |
 
-These numbers are useful as a functional smoke test, not a final claim about model quality. See [docs/case_study.md](docs/case_study.md) and [docs/limitations.md](docs/limitations.md) for interpretation.
+These numbers are a stronger local benchmark than the earlier 80-professor smoke run, but they are still best interpreted as a portfolio demonstration rather than a production claim about professor quality. See [docs/case_study.md](docs/case_study.md) and [docs/limitations.md](docs/limitations.md) for interpretation.
 
 ## Project Structure
 

@@ -6,7 +6,7 @@ This project is suitable as a local portfolio and experimentation platform. It i
 
 - PlanetTerp reviews are user-generated and may not represent all students.
 - Review volume differs widely across professors.
-- Small local smoke runs are useful for testing workflows but are not enough for stable model conclusions.
+- Small local smoke runs are useful for testing workflows but are not enough for stable model conclusions; the current documented refresh uses 150 model-ready rows, which is better but still modest.
 - Snapshot results can differ from live API results as public data changes.
 - Expected grades and review text may be missing or inconsistently formatted.
 
@@ -31,7 +31,7 @@ This project is suitable as a local portfolio and experimentation platform. It i
 - There is no background job queue yet.
 - Experiment tracking is local-file based rather than MLflow or a database-backed registry.
 - The frontend is configured for local development, not a hosted deployment.
-- Docker Compose and deployment packaging are deferred to Phase 10.
+- Docker Compose is included for local portfolio demos, but hosted deployment hardening is still out of scope.
 
 ## Responsible Use
 

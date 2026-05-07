@@ -90,7 +90,7 @@ function App() {
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
   const [plots, setPlots] = useState<PlotInfo[]>([]);
 
-  async function loadDashboard(nextRunId?: string) {
+  async function loadDashboard(nextRunId?: string, preferLatest = false) {
     setLoadState("loading");
     setError(null);
 
@@ -100,7 +100,9 @@ function App() {
         listRuns(),
         listModels(),
       ]);
-      const chosenRunId = nextRunId || selectedRunId || runResponse[0]?.run_id || "";
+      const chosenRunId = preferLatest
+        ? runResponse[0]?.run_id || ""
+        : nextRunId || selectedRunId || runResponse[0]?.run_id || "";
 
       setHealth(healthResponse.status);
       setRuns(runResponse);
@@ -193,7 +195,7 @@ function App() {
       <main className="main-panel">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Phase 7 Dashboard</p>
+            <p className="eyebrow">Experiment Dashboard</p>
             <h2>{navItems.find((item) => item.key === view)?.label}</h2>
           </div>
           <div className="toolbar">
@@ -214,8 +216,8 @@ function App() {
             </select>
             <button
               className="icon-button"
-              onClick={() => void loadDashboard(selectedRunId)}
-              title="Refresh dashboard"
+              onClick={() => void loadDashboard(undefined, true)}
+              title="Refresh latest run"
               type="button"
             >
               <RefreshCw size={18} />

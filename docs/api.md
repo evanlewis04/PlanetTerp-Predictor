@@ -118,6 +118,7 @@ Trigger training from the latest snapshot:
 ```powershell
 $body = @{
   snapshot = "latest"
+  max_professors = 80
   min_reviews = 1
   experiment_name = "api-smoke"
   save_experiment = $true
@@ -126,4 +127,18 @@ $body = @{
 Invoke-RestMethod http://127.0.0.1:8000/api/train -Method Post -Body $body -ContentType "application/json"
 ```
 
-`POST /api/train` runs synchronously. For larger datasets, a later phase should move training into a background job queue.
+Trigger training from a fresh PlanetTerp API fetch by sending `snapshot = $null`:
+
+```powershell
+$body = @{
+  snapshot = $null
+  max_professors = 80
+  min_reviews = 1
+  experiment_name = "api-live-smoke"
+  save_experiment = $true
+} | ConvertTo-Json
+
+Invoke-RestMethod http://127.0.0.1:8000/api/train -Method Post -Body $body -ContentType "application/json"
+```
+
+`POST /api/train` runs synchronously in the API process. The response includes `latest_run_id` when a saved experiment run was created and became the latest run. For larger datasets, a later phase should move training into a background job queue.

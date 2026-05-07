@@ -56,6 +56,12 @@ The prediction view submits a feature payload to `/api/predict`. The text box de
 
 ![Prediction explorer](images/dashboard-prediction.png)
 
+### Train
+
+The train view submits real synchronous training requests to `/api/train`. It supports an experiment name, max professor count, minimum review count, latest-snapshot mode, live-API mode, and a save-experiment toggle. Latest-snapshot mode sends `snapshot: "latest"`; live-API mode sends `snapshot: null`.
+
+Because the API endpoint runs training before returning, the dashboard shows an in-progress state until the response arrives. When a saved run is returned in `latest_run_id`, the dashboard refreshes run data and selects that run.
+
 ### Runs
 
 The runs view lists saved local experiment folders and the model registry families exposed by the API.

@@ -24,6 +24,7 @@ import {
   listModels,
   listRuns,
   predict,
+  train,
 } from "./api";
 import type {
   FeatureImportance,
@@ -34,11 +35,13 @@ import type {
   PredictionResponse,
   RunMetadata,
   RunSummary,
+  TrainResponse,
 } from "./types";
 
-type ViewKey = "overview" | "dataset" | "comparison" | "features" | "plots" | "predict" | "runs";
+type ViewKey = "overview" | "dataset" | "comparison" | "features" | "plots" | "predict" | "train" | "runs";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
+type TrainState = "idle" | "running" | "success" | "error";
 
 const navItems: Array<{ key: ViewKey; label: string; icon: typeof Gauge }> = [
   { key: "overview", label: "Overview", icon: Gauge },
@@ -47,6 +50,7 @@ const navItems: Array<{ key: ViewKey; label: string; icon: typeof Gauge }> = [
   { key: "features", label: "Features", icon: Sparkles },
   { key: "plots", label: "Plots", icon: GalleryHorizontalEnd },
   { key: "predict", label: "Predict", icon: Brain },
+  { key: "train", label: "Train", icon: FlaskConical },
   { key: "runs", label: "Runs", icon: ListChecks },
 ];
 
@@ -227,7 +231,9 @@ function App() {
 
         {loadState === "error" && <ErrorBanner error={error} />}
         {loadState === "loading" && <LoadingBand />}
-        {loadState !== "loading" && runs.length === 0 && <EmptyRuns apiBaseUrl={API_BASE_URL} />}
+        {loadState !== "loading" && runs.length === 0 && view !== "train" && (
+          <EmptyRuns apiBaseUrl={API_BASE_URL} />
+        )}
 
         {runs.length > 0 && view === "overview" && (
           <Overview
@@ -249,11 +255,161 @@ function App() {
         {runs.length > 0 && view === "predict" && (
           <PredictionExplorer runId={selectedRunId} metadata={metadata} />
         )}
+        {view === "train" && (
+          <TrainingPanel
+            onTrainingComplete={(latestRunId) =>
+              loadDashboard(latestRunId ?? undefined, !latestRunId)
+            }
+          />
+        )}
         {runs.length > 0 && view === "runs" && (
           <RunsView runs={runs} selectedRunId={selectedRunId} models={models} />
         )}
       </main>
     </div>
+  );
+}
+
+function TrainingPanel({
+  onTrainingComplete,
+}: {
+  onTrainingComplete: (latestRunId: string | null) => Promise<void>;
+}) {
+  const [experimentName, setExperimentName] = useState("dashboard-demo");
+  const [maxProfessors, setMaxProfessors] = useState(80);
+  const [minReviews, setMinReviews] = useState(1);
+  const [snapshotMode, setSnapshotMode] = useState<"latest" | "live">("latest");
+  const [saveExperiment, setSaveExperiment] = useState(true);
+  const [trainState, setTrainState] = useState<TrainState>("idle");
+  const [trainResult, setTrainResult] = useState<TrainResponse | null>(null);
+  const [trainError, setTrainError] = useState<string | null>(null);
+
+  async function submitTraining(event: FormEvent) {
+    event.preventDefault();
+    setTrainState("running");
+    setTrainResult(null);
+    setTrainError(null);
+
+    try {
+      const result = await train({
+        max_professors: Math.max(1, Math.floor(maxProfessors)),
+        min_reviews: Math.max(1, Math.floor(minReviews)),
+        snapshot: snapshotMode === "latest" ? "latest" : null,
+        experiment_name: experimentName.trim() || null,
+        save_experiment: saveExperiment,
+      });
+      setTrainResult(result);
+      setTrainState("success");
+      await onTrainingComplete(result.latest_run_id);
+    } catch (caught) {
+      setTrainError(caught instanceof Error ? caught.message : "Training failed.");
+      setTrainState("error");
+    }
+  }
+
+  return (
+    <section className="train-layout">
+      <form className="panel train-form" onSubmit={(event) => void submitTraining(event)}>
+        <PanelTitle icon={FlaskConical} title="Training Run" />
+        <p className="panel-note">
+          Training runs synchronously in the API process. This page waits for the response, so live API runs
+          and larger professor counts can take a while.
+        </p>
+
+        <label className="field-block full">
+          <span>Experiment Name</span>
+          <input
+            value={experimentName}
+            onChange={(event) => setExperimentName(event.target.value)}
+            placeholder="dashboard-demo"
+          />
+        </label>
+
+        <div className="input-grid">
+          <label className="field-block">
+            <span>Max Professors</span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={maxProfessors}
+              onChange={(event) => setMaxProfessors(Number(event.target.value))}
+            />
+          </label>
+          <label className="field-block">
+            <span>Min Reviews</span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={minReviews}
+              onChange={(event) => setMinReviews(Number(event.target.value))}
+            />
+          </label>
+        </div>
+
+        <fieldset className="segmented-field">
+          <legend>Snapshot Mode</legend>
+          <label className={snapshotMode === "latest" ? "active" : ""}>
+            <input
+              type="radio"
+              name="snapshot-mode"
+              checked={snapshotMode === "latest"}
+              onChange={() => setSnapshotMode("latest")}
+            />
+            <span>Latest snapshot</span>
+          </label>
+          <label className={snapshotMode === "live" ? "active" : ""}>
+            <input
+              type="radio"
+              name="snapshot-mode"
+              checked={snapshotMode === "live"}
+              onChange={() => setSnapshotMode("live")}
+            />
+            <span>Live API</span>
+          </label>
+        </fieldset>
+
+        <label className="toggle-row">
+          <input
+            type="checkbox"
+            checked={saveExperiment}
+            onChange={(event) => setSaveExperiment(event.target.checked)}
+          />
+          <span>Save experiment artifacts</span>
+        </label>
+
+        <button className="primary-button" type="submit" disabled={trainState === "running"}>
+          <FlaskConical size={18} />
+          {trainState === "running" ? "Training" : "Start Training"}
+        </button>
+      </form>
+
+      <section className="panel train-status">
+        <PanelTitle icon={Activity} title="Run Status" />
+        {trainState === "idle" && (
+          <div className="empty-state compact">
+            <FlaskConical size={28} />
+            <p>Ready to start a synchronous training run.</p>
+          </div>
+        )}
+        {trainState === "running" && (
+          <div className="status-stack running">
+            <RefreshCw size={24} />
+            <strong>Training in progress</strong>
+            <span>The dashboard will refresh after the API returns.</span>
+          </div>
+        )}
+        {trainState === "success" && (
+          <div className="detail-list">
+            <Detail label="Status" value={trainResult?.status} />
+            <Detail label="Latest Run ID" value={trainResult?.latest_run_id ?? "No saved run returned"} />
+            <Detail label="Message" value={trainResult?.message} />
+          </div>
+        )}
+        {trainState === "error" && <p className="form-error">{trainError}</p>}
+      </section>
+    </section>
   );
 }
 

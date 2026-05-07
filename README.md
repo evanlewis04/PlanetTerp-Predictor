@@ -20,7 +20,7 @@ The project is designed to answer three practical questions:
 - Runs compact `GridSearchCV` tuning for supported model families.
 - Saves local experiment runs with metadata, metrics, plots, feature importance, and `joblib` model bundles.
 - Exposes run metadata, metrics, plots, model registry data, predictions, and training through FastAPI.
-- Provides a React/Vite dashboard for browsing runs, model metrics, plots, feature importance, and simple predictions.
+- Provides a React/Vite dashboard for browsing runs, model metrics, plots, feature importance, simple predictions, and synchronous training triggers.
 - Includes Python unit, API endpoint, and model-training fixture tests plus a browser smoke test for the dashboard.
 
 ## Current Example Result
@@ -134,6 +134,8 @@ http://127.0.0.1:5173
 ```
 
 The dashboard reads `http://127.0.0.1:8000` by default. Set `VITE_API_BASE_URL` before `npm run dev` to target another backend.
+
+Use the dashboard's `Train` view to start a real `POST /api/train` run from either the latest saved raw snapshot or a fresh PlanetTerp API fetch. Training is synchronous: the page waits for the API response, then refreshes dashboard data and selects the returned run when one is saved. The form defaults are intentionally small for local demos.
 
 ## Docker Compose Deployment
 

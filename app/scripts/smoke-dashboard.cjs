@@ -47,10 +47,15 @@ async function main() {
   await page.getByText("Best R2 Model").waitFor({ timeout: 10000 });
   await page.getByText("Random Forest").waitFor({ timeout: 10000 });
 
-  for (const tabName of ["Dataset", "Models", "Features", "Plots", "Predict", "Runs", "Overview"]) {
+  for (const tabName of ["Dataset", "Models", "Features", "Plots", "Predict", "Train", "Runs", "Overview"]) {
     await page.getByRole("button", { name: tabName, exact: true }).click();
     await page.getByRole("heading", { name: tabName, exact: true }).waitFor({ timeout: 10000 });
   }
+
+  await page.getByRole("button", { name: "Train", exact: true }).click();
+  await page.getByLabel("Experiment Name").fill("smoke-no-submit");
+  await page.getByText("Live API", { exact: true }).click();
+  await page.getByRole("button", { name: "Start Training", exact: true }).waitFor({ timeout: 10000 });
 
   await page.getByRole("button", { name: "Predict", exact: true }).click();
   await page

@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import joblib
 import pandas as pd
@@ -112,6 +113,52 @@ class ApiEndpointTests(unittest.TestCase):
             response.json()["detail"]["missing_features"],
             ["avg_sentiment_compound"],
         )
+
+    def test_train_accepts_live_api_request_and_reports_new_saved_run(self) -> None:
+        new_run_id = "99999999_999999_dashboard-train"
+        captured_kwargs = {}
+
+        def fake_training(**kwargs):
+            captured_kwargs.update(kwargs)
+            run_dir = self.runs_dir / new_run_id
+            run_dir.mkdir(parents=True)
+            (run_dir / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "run_id": new_run_id,
+                        "created_at": "2099-01-01T00:00:00",
+                        "experiment_name": kwargs["experiment_name"],
+                        "best_model_name": "Fixture Model",
+                        "feature_count": 2,
+                        "feature_columns": ["num_reviews", "avg_sentiment_compound"],
+                        "git_commit": "fixture456",
+                    },
+                ),
+                encoding="utf-8",
+            )
+            return object(), None, None, None
+
+        with patch.object(api_main, "run_planetterp_analysis", side_effect=fake_training):
+            response = self.client.post(
+                "/api/train",
+                json={
+                    "snapshot": None,
+                    "max_professors": 80,
+                    "min_reviews": 1,
+                    "experiment_name": "dashboard-train",
+                    "save_experiment": True,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "completed")
+        self.assertEqual(response.json()["latest_run_id"], new_run_id)
+        self.assertEqual(captured_kwargs["num_professors"], 80)
+        self.assertEqual(captured_kwargs["min_reviews"], 1)
+        self.assertIsNone(captured_kwargs["professors"])
+        self.assertIsNone(captured_kwargs["snapshot_metadata"])
+        self.assertEqual(captured_kwargs["experiment_name"], "dashboard-train")
+        self.assertTrue(captured_kwargs["save_experiment"])
 
     def _write_fixture_run(self, run_id: str) -> None:
         run_dir = self.runs_dir / run_id

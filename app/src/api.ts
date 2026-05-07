@@ -6,6 +6,8 @@ import type {
   PredictionResponse,
   RunMetadata,
   RunSummary,
+  TrainRequest,
+  TrainResponse,
 } from "./types";
 
 export const API_BASE_URL =
@@ -60,6 +62,13 @@ export function predict(runId: string, features: Record<string, number>) {
       features,
       fill_missing: true,
     }),
+  });
+}
+
+export function train(request: TrainRequest) {
+  return requestJson<TrainResponse>("/api/train", {
+    method: "POST",
+    body: JSON.stringify(request),
   });
 }
 

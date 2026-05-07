@@ -250,7 +250,8 @@ figcaption span {
 }
 
 .split-grid,
-.predict-layout {
+.predict-layout,
+.train-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.65fr);
   gap: 18px;
@@ -487,6 +488,18 @@ td {
   gap: 14px;
 }
 
+.train-form {
+  display: grid;
+  gap: 14px;
+}
+
+.panel-note {
+  margin: -4px 0 2px;
+  color: #596456;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .input-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -541,6 +554,83 @@ td {
 .primary-button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.segmented-field {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segmented-field legend {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+  color: #556154;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.segmented-field label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #cfd7cb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #4e584e;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.segmented-field label.active {
+  border-color: #8cbdb4;
+  background: #eef6f3;
+  color: #143f3a;
+}
+
+.segmented-field input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #425044;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.toggle-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #216f68;
+}
+
+.train-status {
+  position: sticky;
+  top: 18px;
+}
+
+.status-stack {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-height: 180px;
+  color: #596456;
+  text-align: center;
+}
+
+.status-stack.running svg {
+  color: #2c766e;
+  animation: spin 1.2s linear infinite;
 }
 
 .prediction-result {
@@ -620,11 +710,13 @@ td {
 
   .split-grid,
   .predict-layout,
+  .train-layout,
   .plot-grid {
     grid-template-columns: 1fr;
   }
 
-  .prediction-result {
+  .prediction-result,
+  .train-status {
     position: static;
   }
 }
@@ -674,7 +766,8 @@ td {
   .kpi-grid,
   .detail-grid,
   .plot-strip,
-  .input-grid {
+  .input-grid,
+  .segmented-field {
     grid-template-columns: 1fr;
   }
 

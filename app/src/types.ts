@@ -63,6 +63,20 @@ export type PredictionResponse = {
   extra_features: string[];
 };
 
+export type TrainRequest = {
+  max_professors: number;
+  min_reviews: number;
+  snapshot: "latest" | null;
+  experiment_name: string | null;
+  save_experiment: boolean;
+};
+
+export type TrainResponse = {
+  status: string;
+  latest_run_id: string | null;
+  message: string;
+};
+
 export type HealthResponse = {
   status: string;
   service: string;
